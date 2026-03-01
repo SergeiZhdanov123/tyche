@@ -1,0 +1,38 @@
+# Tyche Terminal Backend Dependencies
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
+# Database
+sqlalchemy>=2.0.25
+
+# HTTP Client
+httpx>=0.26.0
+
+# Data Processing
+pandas>=2.2.0
+numpy>=1.26.3
+
+# Web Scraping
+beautifulsoup4>=4.12.3
+lxml>=5.1.0
+
+# Caching
+cachetools>=5.3.2
+
+# Scheduling
+apscheduler>=3.10.4
+
+# Yahoo Finance
+yfinance>=0.2.36
+
+# Security
+python-dotenv>=1.0.1
+
+# Pydantic (data validation) - use latest for Python 3.13
+pydantic>=2.10.0
+
+# CORS
+starlette>=0.35.1
