@@ -38,7 +38,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # allow dashboard on any port
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -3179,7 +3179,7 @@ async def curl_examples():
     """
     Get example curl commands for all major endpoints.
     """
-    base = "http://localhost:8000"
+    base = os.getenv("API_BASE_URL", "http://localhost:8000")
     
     return {
         "market_data": [
