@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -80,7 +80,7 @@ const plans = [
     },
 ];
 
-export default function SelectPlanPage() {
+function SelectPlanInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { plan: currentPlan, refresh } = useSubscription();
@@ -266,5 +266,13 @@ export default function SelectPlanPage() {
                 All paid plans include a 14-day free trial. Cancel anytime.
             </motion.p>
         </main>
+    );
+}
+
+export default function SelectPlanPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <SelectPlanInner />
+        </Suspense>
     );
 }
