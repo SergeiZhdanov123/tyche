@@ -995,6 +995,10 @@ from fastapi.responses import JSONResponse
 
 @app.middleware("http")
 async def auth_and_rate_middleware(request: Request, call_next):
+    # ✅ Always allow CORS preflight (OPTIONS) requests through immediately
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     identity = await get_identity(request)
 
     # ✅ Dev bypass for localhost so your dashboard doesn't instantly rate-limit itself
