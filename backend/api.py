@@ -1611,89 +1611,345 @@ async def financial_health(
     )
 
 # ============================================================
-# NEWS API INTEGRATION (APPENDED)
+# NEWS SCRAPER (FREE — replaces NewsAPI)
+# Uses Google News RSS, Yahoo Finance RSS, and direct scraping
 # ============================================================
 
-NEWS_API_KEY = os.getenv("NEWS_API_KEY", "").strip()
-NEWS_API_BASE = "https://newsapi.org/v2"
+import feedparser
+from urllib.parse import quote_plus, urlparse
+import xml.etree.ElementTree as ET
+import re as _re
+from html import unescape as html_unescape
+
+# In-memory news cache: key -> (timestamp, data)
+_news_cache: Dict[str, Tuple[float, Any]] = {}
+NEWS_CACHE_TTL = 300  # 5 minutes
 
 
-class NewsArticle(BaseModel):
+class ScrapedArticle(BaseModel):
     source: str
     title: str
     description: Optional[str] = None
     url: str
+    image_url: Optional[str] = None
     published_at: str
     sentiment_hint: Optional[str] = None
+
+
+class NewsFeedResponse(BaseModel):
+    category: str
+    total_results: int
+    articles: List[ScrapedArticle]
 
 
 class NewsResponse(BaseModel):
     ticker: str
     total_results: int
-    articles: List[NewsArticle]
+    articles: List[ScrapedArticle]
     notes: List[str] = []
 
 
-async def fetch_company_news(
-    query: str,
-    days_back: int = 7,
-    limit: int = 20,
-) -> Tuple[List[NewsArticle], List[str]]:
-    if not NEWS_API_KEY:
-        raise HTTPException(status_code=501, detail="NEWS_API_KEY not set")
+def _detect_sentiment(text: str) -> Optional[str]:
+    """Simple keyword sentiment from title + description."""
+    t = text.lower()
+    pos = ["beats", "strong", "record", "growth", "surge", "raises", "upgrade",
+           "bullish", "soars", "jumps", "rally", "profit", "outperform", "exceeds"]
+    neg = ["misses", "weak", "lawsuit", "decline", "probe", "cut", "downgrade",
+           "bearish", "plunge", "crash", "loss", "disappoints", "underperform", "warns"]
+    if any(w in t for w in pos):
+        return "positive"
+    if any(w in t for w in neg):
+        return "negative"
+    return None
 
-    from_date = (dt.date.today() - dt.timedelta(days=days_back)).isoformat()
 
-    params = {
-        "q": query,
-        "from": from_date,
-        "language": "en",
-        "sortBy": "publishedAt",
-        "pageSize": min(limit, 100),
-        "apiKey": NEWS_API_KEY,
-    }
+def _clean_html(text: str) -> str:
+    """Strip HTML tags and decode entities."""
+    if not text:
+        return ""
+    clean = _re.sub(r"<[^>]+>", "", text)
+    return html_unescape(clean).strip()
 
-    async with httpx.AsyncClient(timeout=20.0) as client:
-        r = await client.get(f"{NEWS_API_BASE}/everything", params=params)
 
-        if r.status_code != 200:
-            raise HTTPException(
-                status_code=502,
-                detail=f"NewsAPI error {r.status_code}: {r.text[:200]}",
-            )
+def _extract_source_from_url(url: str) -> str:
+    """Extract readable source name from URL domain."""
+    try:
+        domain = urlparse(url).netloc.replace("www.", "")
+        # Map common domains to nice names
+        source_map = {
+            "reuters.com": "Reuters",
+            "cnbc.com": "CNBC",
+            "bloomberg.com": "Bloomberg",
+            "wsj.com": "WSJ",
+            "marketwatch.com": "MarketWatch",
+            "finance.yahoo.com": "Yahoo Finance",
+            "seekingalpha.com": "Seeking Alpha",
+            "fool.com": "Motley Fool",
+            "barrons.com": "Barron's",
+            "investopedia.com": "Investopedia",
+            "benzinga.com": "Benzinga",
+            "thestreet.com": "TheStreet",
+            "ft.com": "Financial Times",
+            "investors.com": "IBD",
+            "nytimes.com": "NY Times",
+            "washingtonpost.com": "Washington Post",
+            "apnews.com": "AP News",
+            "bbc.com": "BBC",
+            "cnn.com": "CNN",
+            "foxbusiness.com": "Fox Business",
+        }
+        for pattern, name in source_map.items():
+            if pattern in domain:
+                return name
+        # Fallback: capitalize domain parts
+        parts = domain.split(".")
+        return parts[-2].capitalize() if len(parts) >= 2 else domain
+    except Exception:
+        return "Unknown"
 
-        data = r.json()
 
-    articles: List[NewsArticle] = []
+async def _fetch_article_image(url: str) -> Optional[str]:
+    """Fetch og:image from an article URL (fast, with timeout)."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
+            r = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            })
+            if r.status_code != 200:
+                return None
+            # Only parse partial HTML for speed
+            html_text = r.text[:20000]
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_text, "lxml")
+            # Try og:image first
+            og = soup.find("meta", property="og:image")
+            if og and og.get("content"):
+                return og["content"]
+            # Try twitter:image
+            tw = soup.find("meta", attrs={"name": "twitter:image"})
+            if tw and tw.get("content"):
+                return tw["content"]
+            return None
+    except Exception:
+        return None
 
-    for a in data.get("articles", []):
-        title = a.get("title") or ""
-        desc = a.get("description") or ""
-        combined = (title + " " + desc).lower()
 
-        sentiment = None
-        if any(w in combined for w in ["beats", "strong", "record", "growth", "surge", "raises"]):
-            sentiment = "positive"
-        elif any(w in combined for w in ["misses", "weak", "lawsuit", "decline", "probe", "cut"]):
-            sentiment = "negative"
+async def _scrape_google_news_rss(query: str, limit: int = 20) -> List[ScrapedArticle]:
+    """Scrape Google News RSS feed for a query."""
+    encoded_q = quote_plus(query)
+    rss_url = f"https://news.google.com/rss/search?q={encoded_q}&hl=en-US&gl=US&ceid=US:en"
 
-        articles.append(
-            NewsArticle(
-                source=(a.get("source") or {}).get("name", "unknown"),
-                title=title,
-                description=desc,
-                url=a.get("url"),
-                published_at=a.get("publishedAt"),
-                sentiment_hint=sentiment,
-            )
-        )
+    cache_key = f"gnews:{query}:{limit}"
+    now = time.time()
+    if cache_key in _news_cache:
+        ts, cached = _news_cache[cache_key]
+        if now - ts < NEWS_CACHE_TTL:
+            return cached
 
-    notes: List[str] = []
-    if not articles:
-        notes.append("No recent news articles found")
+    articles: List[ScrapedArticle] = []
 
-    return articles, notes
+    try:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            r = await client.get(rss_url, headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            })
+            if r.status_code != 200:
+                return []
 
+            feed = feedparser.parse(r.text)
+
+            # Collect articles from RSS
+            image_tasks = []
+            raw_articles = []
+
+            for entry in feed.entries[:limit]:
+                title = _clean_html(entry.get("title", ""))
+                link = entry.get("link", "")
+                desc = _clean_html(entry.get("description", "") or entry.get("summary", ""))
+                pub_date = entry.get("published", "")
+
+                # Parse published date
+                if pub_date and hasattr(entry, "published_parsed") and entry.published_parsed:
+                    import calendar
+                    pub_ts = calendar.timegm(entry.published_parsed)
+                    pub_date = dt.datetime.utcfromtimestamp(pub_ts).isoformat() + "Z"
+
+                source = _extract_source_from_url(link) if link else "Google News"
+                # Sometimes Google News wraps source in the title as "Title - Source"
+                if " - " in title:
+                    parts = title.rsplit(" - ", 1)
+                    if len(parts[1]) < 40:  # Source names are short
+                        source = parts[1]
+                        title = parts[0]
+
+                sentiment = _detect_sentiment(title + " " + desc)
+
+                raw_articles.append({
+                    "source": source,
+                    "title": title,
+                    "description": desc[:300] if desc else None,
+                    "url": link,
+                    "published_at": pub_date,
+                    "sentiment_hint": sentiment,
+                })
+                image_tasks.append(_fetch_article_image(link))
+
+            # Fetch images in parallel (fast)
+            if image_tasks:
+                images = await asyncio.gather(*image_tasks, return_exceptions=True)
+            else:
+                images = []
+
+            for i, raw in enumerate(raw_articles):
+                img = images[i] if i < len(images) and not isinstance(images[i], Exception) else None
+                articles.append(ScrapedArticle(
+                    source=raw["source"],
+                    title=raw["title"],
+                    description=raw["description"],
+                    url=raw["url"],
+                    image_url=img,
+                    published_at=raw["published_at"],
+                    sentiment_hint=raw["sentiment_hint"],
+                ))
+
+    except Exception as e:
+        print(f"[News Scraper] Error scraping Google News: {e}")
+
+    _news_cache[cache_key] = (now, articles)
+    return articles
+
+
+async def _scrape_yahoo_finance_rss(ticker: str = "", limit: int = 20) -> List[ScrapedArticle]:
+    """Scrape Yahoo Finance RSS feed."""
+    if ticker:
+        rss_url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker.upper()}&region=US&lang=en-US"
+    else:
+        rss_url = "https://finance.yahoo.com/news/rssindex"
+
+    cache_key = f"yfin:{ticker}:{limit}"
+    now = time.time()
+    if cache_key in _news_cache:
+        ts, cached = _news_cache[cache_key]
+        if now - ts < NEWS_CACHE_TTL:
+            return cached
+
+    articles: List[ScrapedArticle] = []
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            r = await client.get(rss_url, headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            })
+            if r.status_code != 200:
+                return []
+
+            feed = feedparser.parse(r.text)
+
+            image_tasks = []
+            raw_articles = []
+
+            for entry in feed.entries[:limit]:
+                title = _clean_html(entry.get("title", ""))
+                link = entry.get("link", "")
+                desc = _clean_html(entry.get("description", "") or entry.get("summary", ""))
+                pub_date = entry.get("published", "")
+
+                if pub_date and hasattr(entry, "published_parsed") and entry.published_parsed:
+                    import calendar
+                    pub_ts = calendar.timegm(entry.published_parsed)
+                    pub_date = dt.datetime.utcfromtimestamp(pub_ts).isoformat() + "Z"
+
+                source = _extract_source_from_url(link) if link else "Yahoo Finance"
+                sentiment = _detect_sentiment(title + " " + desc)
+
+                raw_articles.append({
+                    "source": source,
+                    "title": title,
+                    "description": desc[:300] if desc else None,
+                    "url": link,
+                    "published_at": pub_date,
+                    "sentiment_hint": sentiment,
+                })
+                image_tasks.append(_fetch_article_image(link))
+
+            if image_tasks:
+                images = await asyncio.gather(*image_tasks, return_exceptions=True)
+            else:
+                images = []
+
+            for i, raw in enumerate(raw_articles):
+                img = images[i] if i < len(images) and not isinstance(images[i], Exception) else None
+                articles.append(ScrapedArticle(
+                    source=raw["source"],
+                    title=raw["title"],
+                    description=raw["description"],
+                    url=raw["url"],
+                    image_url=img,
+                    published_at=raw["published_at"],
+                    sentiment_hint=raw["sentiment_hint"],
+                ))
+
+    except Exception as e:
+        print(f"[News Scraper] Error scraping Yahoo Finance: {e}")
+
+    _news_cache[cache_key] = (now, articles)
+    return articles
+
+
+# ─── General News Feed Endpoint ───────────────────────────────
+
+NEWS_CATEGORIES = {
+    "earnings": "earnings report stock quarterly results EPS",
+    "markets": "stock market wall street S&P 500 Nasdaq Dow",
+    "sec": "SEC filing regulation compliance securities",
+    "economy": "economy federal reserve inflation GDP interest rate",
+    "crypto": "cryptocurrency bitcoin ethereum blockchain",
+    "tech": "technology stocks FAANG silicon valley IPO",
+}
+
+
+@app.get("/news/feed", response_model=NewsFeedResponse)
+async def news_feed(
+    category: str = Query("earnings", description="Category: earnings|markets|sec|economy|crypto|tech"),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """
+    Scraped financial news feed by category — free, no API key needed.
+    Aggregates from Google News RSS and Yahoo Finance RSS.
+    """
+    query = NEWS_CATEGORIES.get(category, category)
+
+    # Fetch from both sources in parallel
+    google_task = _scrape_google_news_rss(query, limit=limit)
+    async def _empty(): return []
+    yahoo_task = _scrape_yahoo_finance_rss(limit=limit) if category in ("markets", "earnings") else _empty()
+
+    results = await asyncio.gather(google_task, yahoo_task, return_exceptions=True)
+
+    articles: List[ScrapedArticle] = []
+    for result in results:
+        if isinstance(result, list):
+            articles.extend(result)
+
+    # Deduplicate by URL
+    seen_urls: set = set()
+    unique: List[ScrapedArticle] = []
+    for a in articles:
+        if a.url not in seen_urls:
+            seen_urls.add(a.url)
+            unique.append(a)
+
+    # Sort by published_at descending
+    unique.sort(key=lambda a: a.published_at or "", reverse=True)
+
+    return NewsFeedResponse(
+        category=category,
+        total_results=len(unique[:limit]),
+        articles=unique[:limit],
+    )
+
+
+# ─── Company News Endpoint (replaces NewsAPI) ─────────────────
 
 @app.get("/company/{ticker}/news", response_model=NewsResponse)
 async def company_news(
@@ -1701,27 +1957,58 @@ async def company_news(
     days_back: int = Query(7, ge=1, le=30),
     limit: int = Query(20, ge=1, le=100),
 ):
-    query = f"{ticker.upper()} OR {ticker.upper()} earnings OR {ticker.upper()} stock"
+    """
+    Company-specific news via Google News RSS scraping — free.
+    """
+    t = ticker.upper()
+    query = f"{t} stock OR {t} earnings OR {t} shares"
 
-    articles, notes = await fetch_company_news(
-        query=query,
-        days_back=days_back,
-        limit=limit,
-    )
+    articles = await _scrape_google_news_rss(query, limit=limit)
+
+    # Also try Yahoo Finance ticker-specific feed
+    yahoo_articles = await _scrape_yahoo_finance_rss(ticker=t, limit=limit)
+    articles.extend(yahoo_articles)
+
+    # Deduplicate
+    seen: set = set()
+    unique: List[ScrapedArticle] = []
+    for a in articles:
+        if a.url not in seen:
+            seen.add(a.url)
+            unique.append(a)
+
+    # Filter by days_back
+    cutoff = dt.datetime.utcnow() - dt.timedelta(days=days_back)
+    filtered = []
+    for a in unique:
+        try:
+            pub = dt.datetime.fromisoformat(a.published_at.replace("Z", "+00:00")).replace(tzinfo=None)
+            if pub >= cutoff:
+                filtered.append(a)
+        except Exception:
+            filtered.append(a)  # Keep if we can't parse date
+
+    filtered.sort(key=lambda a: a.published_at or "", reverse=True)
+
+    notes: List[str] = []
+    if not filtered:
+        notes.append("No recent news articles found")
 
     return NewsResponse(
-        ticker=ticker.upper(),
-        total_results=len(articles),
-        articles=articles,
+        ticker=t,
+        total_results=len(filtered[:limit]),
+        articles=filtered[:limit],
         notes=notes,
     )
+
+
 # ============================================================
-# EARNINGS-FOCUSED NEWS (FIXED + DATE-ANCHORED)
+# EARNINGS-FOCUSED NEWS (scraper-based)
 # ============================================================
 
 class EarningsNewsBucket(BaseModel):
     phase: str  # before | during | after
-    articles: List[NewsArticle]
+    articles: List[ScrapedArticle]
 
 
 class EarningsNewsResponse(BaseModel):
@@ -1730,75 +2017,6 @@ class EarningsNewsResponse(BaseModel):
     window_days: int
     buckets: List[EarningsNewsBucket]
     notes: List[str] = []
-
-
-def earnings_news_query(ticker: str) -> str:
-    t = ticker.upper()
-    return (
-        f"{t} earnings OR {t} results OR {t} revenue OR {t} EPS "
-        f"OR {t} guidance OR {t} outlook"
-    )
-
-
-async def fetch_company_news_window(
-    query: str,
-    start_date: dt.date,
-    end_date: dt.date,
-    limit: int = 100,
-) -> Tuple[List[NewsArticle], List[str]]:
-    if not NEWS_API_KEY:
-        raise HTTPException(status_code=501, detail="NEWS_API_KEY not set")
-
-    params = {
-        "q": query,
-        "from": start_date.isoformat(),
-        "to": end_date.isoformat(),
-        "language": "en",
-        "sortBy": "publishedAt",
-        "pageSize": min(limit, 100),
-        "apiKey": NEWS_API_KEY,
-    }
-
-    async with httpx.AsyncClient(timeout=20.0) as client:
-        r = await client.get(f"{NEWS_API_BASE}/everything", params=params)
-
-        if r.status_code != 200:
-            raise HTTPException(
-                status_code=502,
-                detail=f"NewsAPI error {r.status_code}: {r.text[:200]}",
-            )
-
-        data = r.json()
-
-    articles: List[NewsArticle] = []
-
-    for a in data.get("articles", []):
-        title = a.get("title") or ""
-        desc = a.get("description") or ""
-        combined = (title + " " + desc).lower()
-
-        sentiment = None
-        if any(w in combined for w in ["beats", "strong", "record", "growth", "surge", "raises"]):
-            sentiment = "positive"
-        elif any(w in combined for w in ["misses", "weak", "lawsuit", "decline", "probe", "cut"]):
-            sentiment = "negative"
-
-        articles.append(
-            NewsArticle(
-                source=(a.get("source") or {}).get("name", "unknown"),
-                title=title,
-                description=desc,
-                url=a.get("url"),
-                published_at=a.get("publishedAt"),
-                sentiment_hint=sentiment,
-            )
-        )
-
-    notes: List[str] = []
-    if not articles:
-        notes.append("No earnings-related news found in this date window")
-
-    return articles, notes
 
 
 @app.get("/company/{ticker}/earnings-news", response_model=EarningsNewsResponse)
@@ -1810,7 +2028,7 @@ async def earnings_news(
     notes: List[str] = []
     t = ticker.upper()
 
-    # 1) Infer earnings date
+    # 1) Resolve earnings date
     ev = await resolve_earnings_event(t, source=source)
     event_date = ev.event_date
     notes.append(f"event_date resolved from {ev.source}")
@@ -1819,35 +2037,21 @@ async def earnings_news(
         notes.append("WARNING: SEC proxy used — earnings date may be inaccurate")
 
     d0 = dt.date.fromisoformat(event_date)
-
-    # 2) Build earnings window (NO plan limits)
     start = d0 - dt.timedelta(days=window_days)
     end = d0 + dt.timedelta(days=window_days)
 
-    # 3) Try earnings-specific query
-    articles, news_notes = await fetch_company_news_window(
-        query=earnings_news_query(t),
-        start_date=start,
-        end_date=end,
-        limit=100,
-    )
-    notes.extend(news_notes)
+    # 2) Fetch news via scraper
+    query = f"{t} earnings OR {t} results OR {t} revenue OR {t} EPS OR {t} guidance"
+    articles = await _scrape_google_news_rss(query, limit=50)
 
-    # 4) Fallback to broader company news if needed
     if not articles:
-        notes.append("No earnings-specific news found, falling back to general company news")
+        notes.append("No earnings-specific news, trying broader search")
+        articles = await _scrape_google_news_rss(f"{t} stock OR {t} shares OR {t} analyst", limit=50)
 
-        articles, fallback_notes = await fetch_company_news_window(
-            query=f"{t} stock OR {t} shares OR {t} analyst OR {t} outlook",
-            start_date=start,
-            end_date=end,
-            limit=100,
-        )
-        notes.extend(fallback_notes)
-
-    before: List[NewsArticle] = []
-    during: List[NewsArticle] = []
-    after: List[NewsArticle] = []
+    # 3) Bucket by phase
+    before: List[ScrapedArticle] = []
+    during: List[ScrapedArticle] = []
+    after: List[ScrapedArticle] = []
 
     for a in articles:
         try:
@@ -1857,13 +2061,15 @@ async def earnings_news(
         except Exception:
             continue
 
-        delta = (pub_date - d0).days
+        if pub_date < start or pub_date > end:
+            continue
 
+        delta = (pub_date - d0).days
         if delta < 0:
             before.append(a)
         elif delta == 0:
             during.append(a)
-        elif delta > 0:
+        else:
             after.append(a)
 
     return EarningsNewsResponse(

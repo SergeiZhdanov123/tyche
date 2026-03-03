@@ -10,6 +10,7 @@ import { useMarketIndices } from "@/hooks/useMarketData";
 import { useTodayEarnings, useWeekEarnings } from "@/hooks/useEarnings";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { getCompanyFilings, type QuoteResponse, type CalendarEvent } from "@/lib/api";
+import { config } from "@/lib/config";
 
 // Types
 interface UserInfo {
@@ -22,8 +23,11 @@ interface UserInfo {
 interface NewsArticle {
     title: string;
     url: string;
-    source: { name: string };
-    publishedAt: string;
+    source: string;
+    published_at: string;
+    publishedAt?: string;
+    image_url?: string | null;
+    sentiment_hint?: string | null;
 }
 
 // Icons
@@ -181,13 +185,11 @@ export default function DashboardPage() {
         return map;
     }, [heatQuotesArr]);
 
-    // Fetch news
+    // Fetch news from backend scraper
     useEffect(() => {
-        const apiKey = process.env.NEXT_PUBLIC_NEWSAPI_KEY;
-        if (!apiKey) { setNewsLoading(false); return; }
-        fetch(`https://newsapi.org/v2/everything?q=earnings+stock+market&language=en&sortBy=publishedAt&pageSize=6&apiKey=${apiKey}`)
+        fetch(`${config.apiUrl}/news/feed?category=earnings&limit=6`)
             .then((r) => r.json())
-            .then((d) => { if (d.status === "ok") setNewsHeadlines(d.articles || []); })
+            .then((d) => { if (d.articles) setNewsHeadlines(d.articles); })
             .catch(() => { })
             .finally(() => setNewsLoading(false));
     }, []);
@@ -384,8 +386,8 @@ export default function DashboardPage() {
                                             className="block px-5 py-3 hover:bg-white/[0.02] transition-colors group">
                                             <p className="text-xs text-text-main line-clamp-2 group-hover:text-primary transition-colors leading-relaxed">{article.title}</p>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] text-primary">{article.source?.name}</span>
-                                                <span className="text-[10px] text-text-muted">{timeAgo(article.publishedAt)}</span>
+                                                <span className="text-[10px] text-primary">{article.source}</span>
+                                                <span className="text-[10px] text-text-muted">{timeAgo(article.published_at || article.publishedAt || "")}</span>
                                             </div>
                                         </a>
                                     ))

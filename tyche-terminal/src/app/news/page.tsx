@@ -3,22 +3,25 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/dashboard-layout";
+import { config } from "@/lib/config";
 
 interface Article {
     title: string;
-    description: string;
+    description: string | null;
     url: string;
-    urlToImage: string | null;
-    source: { name: string };
-    publishedAt: string;
-    author: string | null;
+    image_url: string | null;
+    source: string;
+    published_at: string;
+    sentiment_hint: string | null;
 }
 
 const CATEGORIES = [
-    { id: "earnings", label: "Earnings", query: "earnings report stock" },
-    { id: "markets", label: "Markets", query: "stock market wall street" },
-    { id: "sec", label: "SEC & Filings", query: "SEC filing regulation" },
-    { id: "economy", label: "Economy", query: "economy federal reserve inflation" },
+    { id: "earnings", label: "Earnings" },
+    { id: "markets", label: "Markets" },
+    { id: "sec", label: "SEC & Filings" },
+    { id: "economy", label: "Economy" },
+    { id: "tech", label: "Tech" },
+    { id: "crypto", label: "Crypto" },
 ];
 
 export default function NewsPage() {
@@ -31,19 +34,16 @@ export default function NewsPage() {
         const fetchNews = async () => {
             setLoading(true);
             setError(null);
-            const category = CATEGORIES.find((c) => c.id === activeCategory);
-            const query = encodeURIComponent(category?.query || "earnings");
-            const apiKey = process.env.NEXT_PUBLIC_NEWSAPI_KEY;
 
             try {
                 const res = await fetch(
-                    `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apiKey}`
+                    `${config.apiUrl}/news/feed?category=${activeCategory}&limit=24`
                 );
                 const data = await res.json();
-                if (data.status === "ok") {
-                    setArticles(data.articles || []);
+                if (data.articles) {
+                    setArticles(data.articles);
                 } else {
-                    setError(data.message || "Failed to fetch news");
+                    setError("Failed to fetch news");
                     setArticles([]);
                 }
             } catch {
@@ -58,12 +58,25 @@ export default function NewsPage() {
     }, [activeCategory]);
 
     const timeAgo = (date: string) => {
+        if (!date) return "";
         const diff = Date.now() - new Date(date).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return `${mins}m ago`;
         const hours = Math.floor(mins / 60);
         if (hours < 24) return `${hours}h ago`;
         return `${Math.floor(hours / 24)}d ago`;
+    };
+
+    const sentimentColor = (s: string | null) => {
+        if (s === "positive") return "text-profit";
+        if (s === "negative") return "text-loss";
+        return "text-text-muted";
+    };
+
+    const sentimentDot = (s: string | null) => {
+        if (s === "positive") return "bg-profit";
+        if (s === "negative") return "bg-loss";
+        return "bg-text-muted/30";
     };
 
     return (
@@ -75,8 +88,8 @@ export default function NewsPage() {
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
                         className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${activeCategory === cat.id
-                                ? "bg-primary text-primary-foreground shadow-[0_0_15px_rgba(0,230,118,0.2)]"
-                                : "bg-surface border border-border text-text-muted hover:text-text-main hover:border-primary/30"
+                            ? "bg-primary text-primary-foreground shadow-[0_0_15px_rgba(0,230,118,0.2)]"
+                            : "bg-surface border border-border text-text-muted hover:text-text-main hover:border-primary/30"
                             }`}
                     >
                         {cat.label}
@@ -115,10 +128,10 @@ export default function NewsPage() {
                             transition={{ delay: i * 0.03 }}
                             className="group bg-surface/80 backdrop-blur-sm border border-border rounded-2xl overflow-hidden hover:border-primary/30 transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.05)]"
                         >
-                            {article.urlToImage && (
+                            {article.image_url && (
                                 <div className="h-40 overflow-hidden relative">
                                     <img
-                                        src={article.urlToImage}
+                                        src={article.image_url}
                                         alt=""
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -129,16 +142,24 @@ export default function NewsPage() {
                             <div className="p-5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        {article.source.name}
+                                        {article.source}
                                     </span>
-                                    <span className="text-[10px] text-text-muted">{timeAgo(article.publishedAt)}</span>
+                                    {article.sentiment_hint && (
+                                        <span className={`flex items-center gap-1 text-[10px] font-medium ${sentimentColor(article.sentiment_hint)}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${sentimentDot(article.sentiment_hint)}`} />
+                                            {article.sentiment_hint}
+                                        </span>
+                                    )}
+                                    <span className="text-[10px] text-text-muted ml-auto">{timeAgo(article.published_at)}</span>
                                 </div>
                                 <h3 className="font-semibold text-text-main text-sm leading-tight mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                                     {article.title}
                                 </h3>
-                                <p className="text-xs text-text-muted line-clamp-2">
-                                    {article.description}
-                                </p>
+                                {article.description && (
+                                    <p className="text-xs text-text-muted line-clamp-2">
+                                        {article.description}
+                                    </p>
+                                )}
                             </div>
                         </motion.a>
                     ))}
