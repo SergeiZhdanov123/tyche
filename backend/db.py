@@ -1,5 +1,5 @@
 """
-Database connection and session management for Tyche Terminal API.
+Database connection and session management for Erns API.
 Uses SQLAlchemy with SQLite for caching SEC data and API keys.
 """
 

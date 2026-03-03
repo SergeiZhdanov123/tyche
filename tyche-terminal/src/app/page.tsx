@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from "fra
 import { MarketTape } from "@/components/market-tape";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { TycheLogo } from "@/components/tyche-logo";
+import { ErnsLogo } from "@/components/erns-logo";
 import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
 
@@ -158,11 +158,11 @@ const features = [
 ];
 
 const faqs = [
-  { q: "What data does Tyche cover?", a: "Tyche covers real-time SEC filings (10-K, 10-Q, 8-K), earnings announcements, analyst estimates, and market data for 5,000+ US equities. We parse every filing from EDGAR the moment it's published and extract key metrics automatically." },
+  { q: "What data does Erns cover?", a: "Erns covers real-time SEC filings (10-K, 10-Q, 8-K), earnings announcements, analyst estimates, and market data for 5,000+ US equities. We parse every filing from EDGAR the moment it's published and extract key metrics automatically." },
   { q: "How fast is the data?", a: "Our infrastructure is optimized for speed. SEC filings are parsed and available within milliseconds of hitting EDGAR. Market data streams in real-time during trading hours, and earnings alerts are delivered instantly via the dashboard and API." },
-  { q: "Can I use Tyche for free?", a: "Yes. Our Starter plan is completely free and includes a 5-stock watchlist, basic earnings calendar, and limited screener access. It's a great way to explore the platform before upgrading to Pro for unlimited access and AI-powered signals." },
-  { q: "How does the API work?", a: "The Tyche API provides RESTful endpoints for accessing earnings data, SEC filings, screener results, and AI signals programmatically. Pro plans include 50K API calls per month, and Enterprise plans offer unlimited access with WebSocket streaming." },
-  { q: "What makes Tyche different?", a: "Tyche is purpose-built for earnings intelligence. Unlike general-purpose terminals, every feature is designed around earnings events and SEC filings. Our AI models specifically detect earnings-related patterns, and our screener is built for finding alpha around earnings announcements." },
+  { q: "Can I use Erns for free?", a: "Yes. Our Starter plan is completely free and includes a 5-stock watchlist, basic earnings calendar, and limited screener access. It's a great way to explore the platform before upgrading to Pro for unlimited access and AI-powered signals." },
+  { q: "How does the API work?", a: "The Erns API provides RESTful endpoints for accessing earnings data, SEC filings, screener results, and AI signals programmatically. Pro plans include 50K API calls per month, and Enterprise plans offer unlimited access with WebSocket streaming." },
+  { q: "What makes Erns different?", a: "Erns is purpose-built for earnings intelligence. Unlike general-purpose terminals, every feature is designed around earnings events and SEC filings. Our AI models specifically detect earnings-related patterns, and our screener is built for finding alpha around earnings announcements." },
   { q: "Can I cancel my subscription?", a: "Absolutely. All paid plans come with a 14-day free trial, and you can cancel anytime from your account settings. There are no contracts or cancellation fees. Your access continues until the end of your billing period." },
 ];
 
@@ -354,7 +354,7 @@ export default function Home() {
             <div className="text-center mb-10 md:mb-16">
               <span className="inline-block text-primary text-xs sm:text-sm font-semibold tracking-widest uppercase mb-3 md:mb-4">Live Preview</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 md:mb-6">
-                See <span className="text-gradient-green">Tyche.</span> in Action
+                See <span className="text-gradient-green">Erns.</span> in Action
               </h2>
               <p className="text-text-muted max-w-xl mx-auto text-base md:text-lg px-2">
                 A real-time dashboard built for speed and clarity.
@@ -527,7 +527,7 @@ export default function Home() {
                 Your <span className="text-gradient-green">Trading Style</span>
               </h2>
               <p className="text-text-muted max-w-2xl mx-auto text-base md:text-lg px-2">
-                Whether you trade earnings, build algorithms, or manage a portfolio — Tyche adapts to how you work.
+                Whether you trade earnings, build algorithms, or manage a portfolio — Erns adapts to how you work.
               </p>
             </div>
           </Reveal>
@@ -574,7 +574,7 @@ export default function Home() {
                 Common <span className="text-gradient-green">Questions</span>
               </h2>
               <p className="text-text-muted max-w-xl mx-auto text-base md:text-lg px-2">
-                Everything you need to know about Tyche.
+                Everything you need to know about Erns.
               </p>
             </div>
           </Reveal>

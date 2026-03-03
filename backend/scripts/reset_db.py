@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Reset script for Tyche Backend database
+Reset script for Erns Backend database
 Clears API keys so you can test fresh key generation
 
 Usage: python scripts/reset_db.py

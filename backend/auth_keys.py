@@ -1,5 +1,5 @@
 """
-Secure API key generation and validation for Tyche Terminal.
+Secure API key generation and validation for Erns.
 Uses cryptographic random generation with SHA-256 hashing for storage.
 """
 

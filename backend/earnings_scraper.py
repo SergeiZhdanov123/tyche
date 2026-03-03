@@ -1,5 +1,5 @@
 """
-Earnings Calendar Web Scraper for Tyche Terminal.
+Earnings Calendar Web Scraper for Erns.
 Scrapes earnings dates from Yahoo Finance, Nasdaq, and EarningsWhispers.
 Falls back gracefully if sources are unavailable.
 """

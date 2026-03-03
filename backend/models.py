@@ -1,5 +1,5 @@
 """
-SQLAlchemy models for Tyche Terminal API.
+SQLAlchemy models for Erns API.
 Includes API key management and user tier tracking.
 """
 

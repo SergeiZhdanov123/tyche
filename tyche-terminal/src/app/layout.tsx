@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tyche. | Earnings Intelligence Platform",
+  title: "Erns. | Earnings Intelligence Platform",
   description:
     "Real-time SEC filings, contrarian signals, and algorithmic insights for asymmetric returns.",
   keywords: [

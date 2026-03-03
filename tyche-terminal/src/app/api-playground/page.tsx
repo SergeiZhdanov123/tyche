@@ -392,7 +392,7 @@ export default function ApiPlaygroundPage() {
                             </div>
                             <h2 className="text-xl font-bold text-text-main mb-2">API Playground — Pro Feature</h2>
                             <p className="text-text-muted text-sm mb-6 leading-relaxed">
-                                The API Playground lets you interactively test every Tyche endpoint with live responses. Upgrade to <strong className="text-primary">Pro</strong> or <strong className="text-primary">Enterprise</strong> to unlock full API access.
+                                The API Playground lets you interactively test every Erns endpoint with live responses. Upgrade to <strong className="text-primary">Pro</strong> or <strong className="text-primary">Enterprise</strong> to unlock full API access.
                             </p>
                             <Link
                                 href="/pricing"

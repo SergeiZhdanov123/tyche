@@ -97,14 +97,14 @@ export async function POST(request: NextRequest) {
                 const firstName = clerkUser.firstName || user.name?.split(" ")[0] || "there";
                 user.welcomeEmailSent = true;
                 await user.save();
-                sendEmail(email, `Welcome to Tyche, ${firstName}! 🚀`, welcomeEmailHtml(firstName, plan))
+                sendEmail(email, `Welcome to Erns, ${firstName}! 🚀`, welcomeEmailHtml(firstName, plan))
                     .catch(err => console.error("[Welcome Email] Error:", err));
             }
 
             return NextResponse.json({
                 success: true,
                 plan,
-                message: "Welcome to Tyche! You're on the Starter plan.",
+                message: "Welcome to Erns! You're on the Starter plan.",
             });
         }
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
         const isPro = plan === "pro";
         const unitAmount = isPro ? 4900 : 29900; // $49 or $299
-        const productName = isPro ? "Tyche Pro" : "Tyche Enterprise";
+        const productName = isPro ? "Erns Pro" : "Erns Enterprise";
         const productDescription = isPro
             ? "Unlimited API access, Real-time signals, Advanced screener, AI-powered insights"
             : "Everything in Pro + Unlimited API calls, Custom signal models, Dedicated support, SLA";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TycheLogo } from "@/components/tyche-logo";
+import { ErnsLogo } from "@/components/erns-logo";
 
 const footerColumns = [
     {
@@ -60,7 +60,7 @@ export function Footer() {
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1 mb-4 md:mb-0">
                         <div className="mb-4">
-                            <TycheLogo size="md" />
+                            <ErnsLogo size="md" />
                         </div>
                         <p className="text-text-muted text-sm leading-relaxed max-w-xs">
                             Institutional-grade earnings intelligence for the modern trader.
@@ -92,7 +92,7 @@ export function Footer() {
                 {/* Bottom bar */}
                 <div className="pt-8 border-t border-white/[0.06] flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-text-muted/60 text-sm">
-                        © {new Date().getFullYear()} Tyche. All rights reserved.
+                        © {new Date().getFullYear()} Erns. All rights reserved.
                     </p>
                     <div className="flex gap-5">
                         {socialLinks.map((social, i) => (

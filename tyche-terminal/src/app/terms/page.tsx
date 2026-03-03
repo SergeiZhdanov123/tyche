@@ -12,12 +12,12 @@ export default function TermsPage() {
                 <div className="prose prose-invert prose-sm max-w-none space-y-8 text-text-muted leading-relaxed">
                     <section>
                         <h2 className="text-xl font-semibold text-text-main mb-3">1. Acceptance of Terms</h2>
-                        <p>By accessing or using Tyche (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the Service.</p>
+                        <p>By accessing or using Erns (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the Service.</p>
                     </section>
 
                     <section>
                         <h2 className="text-xl font-semibold text-text-main mb-3">2. Description of Service</h2>
-                        <p>Tyche provides a financial data platform offering earnings intelligence, SEC filing analysis, AI-powered trading signals, and related data services. The Service is intended for informational purposes only and does not constitute financial advice.</p>
+                        <p>Erns provides a financial data platform offering earnings intelligence, SEC filing analysis, AI-powered trading signals, and related data services. The Service is intended for informational purposes only and does not constitute financial advice.</p>
                     </section>
 
                     <section>
@@ -42,7 +42,7 @@ export default function TermsPage() {
 
                     <section>
                         <h2 className="text-xl font-semibold text-text-main mb-3">7. Limitation of Liability</h2>
-                        <p>To the maximum extent permitted by law, Tyche shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service, including but not limited to trading losses.</p>
+                        <p>To the maximum extent permitted by law, Erns shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service, including but not limited to trading losses.</p>
                     </section>
 
                     <section>

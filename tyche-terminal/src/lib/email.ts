@@ -15,7 +15,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
     const from = process.env.SMTP_USER || 'tychefinancials@gmail.com';
     try {
         const result = await transporter.sendMail({
-            from: `"Tyche Terminal" <${from}>`,
+            from: `"Erns" <${from}>`,
             to,
             subject,
             html,
@@ -47,7 +47,7 @@ export function welcomeEmailHtml(firstName: string, plan: string): string {
 
 <!-- HEADER -->
 <tr><td style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:40px 40px 30px;text-align:center;">
-<h1 style="margin:0;color:#fff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Welcome to Tyche Terminal 🚀</h1>
+<h1 style="margin:0;color:#fff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Welcome to Erns 🚀</h1>
 <p style="margin:10px 0 0;color:rgba(255,255,255,0.9);font-size:15px;">Your journey to smarter investing starts now</p>
 </td></tr>
 
@@ -56,7 +56,7 @@ export function welcomeEmailHtml(firstName: string, plan: string): string {
 <p style="font-size:16px;line-height:1.7;margin:0 0 20px;color:#e0e0e0;">Hey <strong style="color:#34d399;">${firstName}</strong>,</p>
 <p style="font-size:15px;line-height:1.7;margin:0 0 20px;color:#b0c0b0;">
 Welcome aboard! You've signed up for the <strong style="color:#10b981;">${planLabel}</strong> plan, and we're excited to have you.
-Tyche Terminal is your all-in-one financial intelligence platform, built for traders who want an edge.
+Erns is your all-in-one financial intelligence platform, built for traders who want an edge.
 </p>
 
 <h3 style="color:#34d399;margin:30px 0 15px;font-size:16px;">Here's what you can do right now:</h3>
@@ -97,7 +97,7 @@ Open Your Dashboard →
 
 <!-- FOOTER -->
 <tr><td style="padding:20px 40px 30px;text-align:center;border-top:1px solid #1a2e1a;">
-<p style="margin:0;color:#4a6a4a;font-size:12px;">© ${new Date().getFullYear()} Tyche Terminal — Built for serious investors</p>
+<p style="margin:0;color:#4a6a4a;font-size:12px;">© ${new Date().getFullYear()} Erns — Built for serious investors</p>
 <p style="margin:5px 0 0;color:#3a5a3a;font-size:11px;">Questions? Reply to this email or reach out at tychefinancials@gmail.com</p>
 </td></tr>
 
@@ -118,7 +118,7 @@ export function promoEmailHtml(version: number, firstName: string): { subject: s
     const year = new Date().getFullYear();
     const footer = `
     <tr><td style="padding:20px 40px 30px;text-align:center;border-top:1px solid #1a2e1a;">
-    <p style="margin:0;color:#4a6a4a;font-size:12px;">© ${year} Tyche Terminal — Built for serious investors</p>
+    <p style="margin:0;color:#4a6a4a;font-size:12px;">© ${year} Erns — Built for serious investors</p>
     <p style="margin:5px 0 0;color:#3a5a3a;font-size:11px;">You're receiving this because you're on the Starter plan. Upgrade anytime at ${appUrl}/settings</p>
     </td></tr>`;
 
@@ -147,7 +147,7 @@ Upgrade to Pro →
     switch (version % 4) {
         case 0:
             return {
-                subject: "🤖 Unlock AI Trading Signals — Tyche Pro",
+                subject: "🤖 Unlock AI Trading Signals — Erns Pro",
                 html: wrapper(`
 <tr><td style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:35px 40px;text-align:center;">
 <h1 style="margin:0;color:#fff;font-size:24px;font-weight:700;">AI Signals That Actually Work</h1>
@@ -156,7 +156,7 @@ Upgrade to Pro →
 <tr><td style="padding:35px 40px;">
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Hey ${firstName},</p>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">
-Imagine getting <strong style="color:#34d399;">personalized AI trading signals</strong> for every stock in your watchlist — every day. That's exactly what Tyche Pro delivers.
+Imagine getting <strong style="color:#34d399;">personalized AI trading signals</strong> for every stock in your watchlist — every day. That's exactly what Erns Pro delivers.
 </p>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Our AI analyzes momentum, volume, earnings data, analyst sentiment, and key technical levels to generate
 <strong style="color:#10b981;">actionable buy/sell signals</strong> with entry prices, stop losses, and profit targets.</p>
@@ -188,7 +188,7 @@ ${cta}
 <tr><td style="padding:35px 40px;">
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Hey ${firstName},</p>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">
-Professional traders don't guess — they use data. With <strong style="color:#10b981;">Tyche Pro</strong>, you get access to the same intelligence that Wall Street uses:
+Professional traders don't guess — they use data. With <strong style="color:#10b981;">Erns Pro</strong>, you get access to the same intelligence that Wall Street uses:
 </p>
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
 <tr><td style="padding:15px;background:#0d1a0d;border-radius:10px;border-left:3px solid #10b981;">
@@ -221,8 +221,8 @@ ${cta}
 <tr><td style="padding:35px 40px;">
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Hey ${firstName},</p>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">
-You've been using Tyche Terminal on the Starter plan, and we hope you're enjoying it.
-But here's the thing — <strong style="color:#22c55e;">you're only seeing 30% of what Tyche can do.</strong>
+You've been using Erns on the Starter plan, and we hope you're enjoying it.
+But here's the thing — <strong style="color:#22c55e;">you're only seeing 30% of what Erns can do.</strong>
 </p>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Pro members get:</p>
 <table width="100%" cellpadding="0" cellspacing="8">
@@ -258,11 +258,11 @@ ${cta}
         case 3:
         default:
             return {
-                subject: "🔥 Did You Know? 78% of Tyche Pro Users Say It Improved Their Trading",
+                subject: "🔥 Did You Know? 78% of Erns Pro Users Say It Improved Their Trading",
                 html: wrapper(`
 <tr><td style="background:linear-gradient(135deg,#047857 0%,#065f46 100%);padding:35px 40px;text-align:center;">
 <h1 style="margin:0;color:#fff;font-size:24px;font-weight:700;">Don't Leave Money on the Table</h1>
-<p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">See what top traders use inside Tyche Pro</p>
+<p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">See what top traders use inside Erns Pro</p>
 </td></tr>
 <tr><td style="padding:35px 40px;">
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">Hey ${firstName},</p>
@@ -273,8 +273,8 @@ Quick question: <strong style="color:#10b981;">How confident are you in your nex
 Pro members have an unfair advantage. They see earnings surprises before the crowd reacts, they get AI signals with specific price levels, and they can read the sentiment of SEC filings in seconds — not hours.
 </p>
 <div style="margin:25px 0;padding:20px;background:#0d1a0d;border-radius:12px;border-left:4px solid #10b981;">
-<p style="margin:0 0 10px;font-size:14px;color:#7a9a7a;font-style:italic;">"I caught a 12% move on NVDA earnings because Tyche's sentiment analysis flagged the filing as extremely bullish before the market opened."</p>
-<p style="margin:0;font-size:12px;color:#4a6a4a;">— Tyche Pro member</p>
+<p style="margin:0 0 10px;font-size:14px;color:#7a9a7a;font-style:italic;">"I caught a 12% move on NVDA earnings because Erns's sentiment analysis flagged the filing as extremely bullish before the market opened."</p>
+<p style="margin:0;font-size:12px;color:#4a6a4a;">— Erns Pro member</p>
 </div>
 <p style="font-size:15px;line-height:1.7;color:#b0c0b0;">
 Here's what you're missing on the free plan:

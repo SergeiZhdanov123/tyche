@@ -7,7 +7,7 @@ interface Message {
     content: string;
 }
 
-export function TycheChat() {
+export function ErnsChat() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
@@ -80,7 +80,7 @@ export function TycheChat() {
                     ? "bg-surface border border-border rotate-0 scale-95"
                     : "bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 scale-100 hover:scale-105"
                     }`}
-                aria-label="Tyche AI Chat"
+                aria-label="Erns AI Chat"
             >
                 {isOpen ? (
                     <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +106,7 @@ export function TycheChat() {
                                 </svg>
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-text-main">Tyche AI</h3>
+                                <h3 className="text-sm font-bold text-text-main">Erns AI</h3>
                                 <p className="text-[10px] text-emerald-400 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                                     Earnings Intelligence Assistant
@@ -131,7 +131,7 @@ export function TycheChat() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                                     </svg>
                                 </div>
-                                <p className="text-sm text-text-main font-medium mb-1">Ask Tyche AI anything</p>
+                                <p className="text-sm text-text-main font-medium mb-1">Ask Erns AI anything</p>
                                 <p className="text-xs text-text-muted mb-4">Earnings data, SEC filings, financial analysis, or platform help</p>
                                 <div className="space-y-1.5 w-full">
                                     {[
@@ -212,7 +212,7 @@ export function TycheChat() {
                                 </svg>
                             </button>
                         </div>
-                        <p className="text-[9px] text-text-muted/30 text-center mt-1.5">Powered by DeepSeek • Tyche AI</p>
+                        <p className="text-[9px] text-text-muted/30 text-center mt-1.5">Powered by DeepSeek • Erns AI</p>
                     </div>
                 </div>
             )}

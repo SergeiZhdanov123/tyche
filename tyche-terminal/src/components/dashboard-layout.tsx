@@ -4,9 +4,9 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { TycheChat } from "@/components/tyche-chat";
+import { ErnsChat } from "@/components/erns-chat";
 import { OnboardingModal } from "@/components/onboarding-modal";
-import { TycheLogo } from "@/components/tyche-logo";
+import { ErnsLogo } from "@/components/erns-logo";
 import { config } from "@/lib/config";
 
 // Icon Components
@@ -303,7 +303,7 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
                 {/* Logo */}
                 <div className="h-16 px-4 flex items-center justify-between border-b border-border">
                     <Link href="/dashboard" className="flex items-center gap-2">
-                        <TycheLogo size="sm" showText={!sidebarCollapsed} />
+                        <ErnsLogo size="sm" showText={!sidebarCollapsed} />
                     </Link>
                     <button
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -569,8 +569,8 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
                 </div>
             </main>
 
-            {/* Tyche AI Chat Widget */}
-            <TycheChat />
+            {/* Erns AI Chat Widget */}
+            <ErnsChat />
 
             {/* Onboarding Modal — First time only */}
             {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}

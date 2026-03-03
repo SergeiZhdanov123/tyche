@@ -39,7 +39,7 @@ export async function verifyTokenEdge(token: string): Promise<JWTPayload | null>
 }
 
 // Cookie name for auth token
-export const AUTH_COOKIE_NAME = "tyche_auth_token";
+export const AUTH_COOKIE_NAME = "erns_auth_token";
 
 // Cookie options
 export const COOKIE_OPTIONS = {

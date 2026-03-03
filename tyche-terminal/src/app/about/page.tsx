@@ -51,13 +51,13 @@ export default function AboutPage() {
                     transition={{ duration: 0.4 }}
                     className="max-w-3xl mx-auto text-center relative z-10"
                 >
-                    <span className="inline-block text-primary text-xs sm:text-sm font-semibold tracking-widest uppercase mb-4 sm:mb-6">About Tyche</span>
+                    <span className="inline-block text-primary text-xs sm:text-sm font-semibold tracking-widest uppercase mb-4 sm:mb-6">About Erns</span>
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text-main mb-5 sm:mb-6 leading-tight">
                         Building the Future of{" "}
                         <span className="text-gradient-green">Earnings Intelligence</span>
                     </h1>
                     <p className="text-text-muted text-base sm:text-lg max-w-2xl mx-auto leading-relaxed px-2">
-                        Tyche was founded on a simple belief: every trader deserves access to
+                        Erns was founded on a simple belief: every trader deserves access to
                         the same intelligence that institutional investors use to gain an edge.
                     </p>
                 </motion.div>
@@ -83,7 +83,7 @@ export default function AboutPage() {
                                 — tools that cost tens of thousands of dollars per year.
                             </p>
                             <p className="text-text-muted text-sm sm:text-base leading-relaxed">
-                                Tyche changes that. We built an earnings intelligence platform that
+                                Erns changes that. We built an earnings intelligence platform that
                                 parses every SEC filing the moment it hits EDGAR, runs AI analysis
                                 to detect sentiment and surprises, and delivers actionable signals
                                 — all at a price any serious trader can afford.
@@ -147,7 +147,7 @@ export default function AboutPage() {
                             </h3>
                             <p className="text-primary font-semibold text-sm mb-4">CEO & Founder</p>
                             <p className="text-text-muted text-sm leading-relaxed">
-                                Sergei built Tyche with a vision to make institutional-grade financial
+                                Sergei built Erns with a vision to make institutional-grade financial
                                 intelligence accessible to every trader. With a deep passion for
                                 markets, data engineering, and AI, he designed the platform from the
                                 ground up to deliver real-time earnings analysis, SEC filing parsing,
@@ -204,7 +204,7 @@ export default function AboutPage() {
                         Ready to trade with an edge?
                     </h2>
                     <p className="text-text-muted mb-8 px-2">
-                        Join thousands of traders who use Tyche for real-time earnings intelligence.
+                        Join thousands of traders who use Erns for real-time earnings intelligence.
                     </p>
                     <a href="/sign-up">
                         <motion.button

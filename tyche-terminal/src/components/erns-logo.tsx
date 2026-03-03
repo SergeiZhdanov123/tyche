@@ -1,15 +1,15 @@
 import React from "react";
 
 /**
- * TycheLogo — Green rounded-square with lightning bolt + "Tyche." text.
+ * ErnsLogo — Green rounded-square with lightning bolt + "Erns." text.
  *
  * Props:
  *  - size: "sm" | "md" | "lg" — controls icon + text size
- *  - showText: whether to show the "Tyche." text
+ *  - showText: whether to show the "Erns." text
  *  - textClassName: optional extra classes for the text
  */
 
-interface TycheLogoProps {
+interface ErnsLogoProps {
     size?: "sm" | "md" | "lg";
     showText?: boolean;
     textClassName?: string;
@@ -22,7 +22,7 @@ const sizes = {
     lg: { box: "w-10 h-10 rounded-xl", bolt: "w-5 h-5", text: "text-2xl" },
 };
 
-export function TycheLogo({ size = "md", showText = true, textClassName, className }: TycheLogoProps) {
+export function ErnsLogo({ size = "md", showText = true, textClassName, className }: ErnsLogoProps) {
     const s = sizes[size];
     return (
         <span className={`inline-flex items-center gap-2 ${className || ""}`}>
@@ -39,7 +39,7 @@ export function TycheLogo({ size = "md", showText = true, textClassName, classNa
             </span>
             {showText && (
                 <span className={`font-bold text-text-main tracking-tight ${s.text} ${textClassName || ""}`}>
-                    Tyche<span className="text-[#1DB954]">.</span>
+                    Erns<span className="text-[#1DB954]">.</span>
                 </span>
             )}
         </span>

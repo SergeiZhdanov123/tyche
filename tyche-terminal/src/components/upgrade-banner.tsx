@@ -92,7 +92,7 @@ export function UpgradeBanner({
                             {title || "Upgrade to Pro"}
                         </h3>
                         <p className="text-[10px] text-text-muted">
-                            {description || "Unlock the full power of Tyche Terminal"}
+                            {description || "Unlock the full power of Erns"}
                         </p>
                     </div>
                 </div>

@@ -628,7 +628,7 @@ export default function ApiDocsPage() {
                 <aside className="w-64 border-r border-border bg-surface/50 overflow-y-auto shrink-0 hidden lg:block">
                     <div className="p-5 border-b border-border">
                         <h2 className="text-lg font-bold text-text-main">API Reference</h2>
-                        <p className="text-xs text-text-muted mt-1">Tyche Earnings Intelligence API</p>
+                        <p className="text-xs text-text-muted mt-1">Erns Earnings Intelligence API</p>
                     </div>
                     <nav className="p-3">
                         {/* Overview */}
@@ -658,7 +658,7 @@ export default function ApiDocsPage() {
                     {/* Overview Section */}
                     {activeSection === "overview" && (
                         <div className="max-w-3xl">
-                            <h1 className="text-3xl font-bold text-text-main mb-4">Tyche Earnings Intelligence API</h1>
+                            <h1 className="text-3xl font-bold text-text-main mb-4">Erns Earnings Intelligence API</h1>
                             <p className="text-text-muted mb-6 leading-relaxed">
                                 A comprehensive earnings-focused API for institutional-grade financial analysis. Get deep earnings intelligence including
                                 SEC filings, analyst consensus, post-earnings stock reactions, AI-powered reviews, live earnings polling, and more — all from a single API.

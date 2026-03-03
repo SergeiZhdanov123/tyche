@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSubscription } from "@/hooks/useSubscription";
-import { TycheLogo } from "@/components/tyche-logo";
+import { ErnsLogo } from "@/components/erns-logo";
 
 const CheckIcon = () => (
     <svg className="w-5 h-5 text-profit" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -94,7 +94,7 @@ function SelectPlanInner() {
         const sessionId = searchParams.get("session_id");
         const plan = searchParams.get("plan");
         if (sessionId) {
-            setSuccess(`🎉 Welcome to Tyche ${plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Pro"}! Your subscription is active.`);
+            setSuccess(`🎉 Welcome to Erns ${plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Pro"}! Your subscription is active.`);
             refresh();
             // Clean up URL
             router.replace("/select-plan", { scroll: false });
@@ -149,7 +149,7 @@ function SelectPlanInner() {
                 className="text-center mb-12"
             >
                 <div className="mb-6">
-                    <TycheLogo size="lg" />
+                    <ErnsLogo size="lg" />
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold text-text-main mb-4">
                     Choose Your Plan

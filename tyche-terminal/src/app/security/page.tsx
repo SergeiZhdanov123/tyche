@@ -12,7 +12,7 @@ export default function SecurityPage() {
                 <div className="prose prose-invert prose-sm max-w-none space-y-8 text-text-muted leading-relaxed">
                     <section>
                         <h2 className="text-xl font-semibold text-text-main mb-3">Infrastructure Security</h2>
-                        <p>Tyche is hosted on SOC 2 Type II certified cloud infrastructure. All data is encrypted in transit using TLS 1.3 and at rest using AES-256 encryption. Our infrastructure is monitored 24/7 with automated threat detection and incident response.</p>
+                        <p>Erns is hosted on SOC 2 Type II certified cloud infrastructure. All data is encrypted in transit using TLS 1.3 and at rest using AES-256 encryption. Our infrastructure is monitored 24/7 with automated threat detection and incident response.</p>
                     </section>
 
                     <section>

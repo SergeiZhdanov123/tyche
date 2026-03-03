@@ -132,7 +132,7 @@ async for filing in client.filings.stream():
                         className="text-center mb-12 sm:mb-16"
                     >
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-main mb-4">
-                            Why Developers Choose <span className="text-primary">Tyche</span>
+                            Why Developers Choose <span className="text-primary">Erns</span>
                         </h2>
                         <p className="text-text-muted max-w-xl mx-auto px-2">
                             Purpose-built for algorithmic trading, quantitative research, and fintech applications.

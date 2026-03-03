@@ -1,5 +1,5 @@
 /**
- * Tyche Terminal API Client
+ * Erns API Client
  * Centralized API client for all backend calls
  */
 import { config } from './config';

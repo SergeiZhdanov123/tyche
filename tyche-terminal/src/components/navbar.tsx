@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useState } from "react";
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
-import { TycheLogo } from "@/components/tyche-logo";
+import { ErnsLogo } from "@/components/erns-logo";
 
 const navLinks = [
     { href: "/features", label: "Features" },
@@ -37,7 +37,7 @@ export function Navbar() {
             <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
                 {/* Logo */}
                 <Link href="/" className="group flex items-center gap-2">
-                    <TycheLogo size="md" />
+                    <ErnsLogo size="md" />
                 </Link>
 
                 {/* Navigation Links - Desktop */}

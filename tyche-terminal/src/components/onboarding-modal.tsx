@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const STEPS = [
     {
         icon: "📊",
-        title: "Welcome to Tyche.",
+        title: "Welcome to Erns.",
         description: "Your all-in-one earnings intelligence platform. Let's take a quick tour of the key features.",
     },
     {
