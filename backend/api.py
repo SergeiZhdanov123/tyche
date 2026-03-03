@@ -36,13 +36,8 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 app = FastAPI(title="Earnings Intelligence API (Mega)", version="0.9")
 from fastapi.middleware.cors import CORSMiddleware
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS is handled manually in auth_and_rate_middleware below
+# (CORSMiddleware was unreliable with the middleware ordering)
 # ============================================================
 # CONFIG
 # ============================================================
@@ -995,26 +990,38 @@ from fastapi.responses import JSONResponse
 
 @app.middleware("http")
 async def auth_and_rate_middleware(request: Request, call_next):
-    # ✅ Always allow CORS preflight (OPTIONS) requests through immediately
+    # ── Manual CORS: handle OPTIONS preflight immediately ──
+    cors_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key, Accept",
+        "Access-Control-Max-Age": "86400",
+    }
+
     if request.method == "OPTIONS":
-        return await call_next(request)
+        return JSONResponse(status_code=200, content={"ok": True}, headers=cors_headers)
 
     identity = await get_identity(request)
 
-    # ✅ Dev bypass for localhost so your dashboard doesn't instantly rate-limit itself
+    # Dev bypass for localhost
     client_ip = request.client.host if request.client else ""
     if client_ip in ("127.0.0.1", "::1", "localhost"):
         request.state.identity = identity
-        return await call_next(request)
+        response = await call_next(request)
+        for k, v in cors_headers.items():
+            response.headers[k] = v
+        return response
 
     try:
         enforce_rate(identity)
         request.state.identity = identity
-        return await call_next(request)
+        response = await call_next(request)
+        for k, v in cors_headers.items():
+            response.headers[k] = v
+        return response
 
     except HTTPException as e:
-        # ✅ Return a real HTTP response instead of crashing into ExceptionGroup -> 500
-        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail}, headers=cors_headers)
 
 
 def identity_dep(request: Request) -> ApiIdentity:
