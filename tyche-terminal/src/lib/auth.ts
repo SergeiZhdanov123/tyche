@@ -1,11 +1,9 @@
 import jwt from "jsonwebtoken";
 import { jwtVerify } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-
-if (!JWT_SECRET) {
-    throw new Error("Please define the JWT_SECRET environment variable");
-}
+// Legacy JWT auth — Clerk now handles authentication.
+// JWT_SECRET is only needed if the old /api/auth/login or /signup routes are used.
+const JWT_SECRET = process.env.JWT_SECRET || "unused-clerk-handles-auth";
 
 export interface JWTPayload {
     userId: string;
