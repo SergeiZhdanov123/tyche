@@ -62,7 +62,7 @@ export default function ApiOverviewPage() {
                         Access real-time SEC filings, earnings data, and AI signals programmatically.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                        <Link href="/api-docs">
+                        <Link href="/docs">
                             <motion.button
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
@@ -260,7 +260,7 @@ async for filing in client.filings.stream():
                                 Get API Key — Free
                             </motion.button>
                         </Link>
-                        <Link href="/api-docs">
+                        <Link href="/docs">
                             <motion.button
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}

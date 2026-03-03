@@ -264,7 +264,7 @@ export default function APIAccessPage() {
                     {/* Links */}
                     <div className="grid sm:grid-cols-2 gap-4">
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                            <Link href="/api-docs" className="block bg-surface border border-border rounded-2xl p-5 hover:border-primary/30 transition-all group">
+                            <Link href="/docs" className="block bg-surface border border-border rounded-2xl p-5 hover:border-primary/30 transition-all group">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
