@@ -47,6 +47,19 @@ async function _addTicker(email: string, ticker: string, notes?: string) {
             _items = [..._items, { ticker: t, added_at: new Date().toISOString(), notes: notes || null }];
             _notify();
         }
+        // Create a notification for watchlist add
+        try {
+            await fetch("/api/notifications", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    type: "watchlist",
+                    title: `${t} added to watchlist`,
+                    message: `You're now tracking ${t}. You'll receive alerts for earnings events.`,
+                    ticker: t,
+                }),
+            });
+        } catch { /* notification creation is non-critical */ }
         // Background refresh for accuracy
         _fetchWatchlist(email);
     } catch (err) {

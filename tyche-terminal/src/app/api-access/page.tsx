@@ -181,9 +181,18 @@ export default function APIAccessPage() {
                         </div>
 
                         {isStarterUser && (
-                            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-400">
-                                <p className="font-semibold mb-1">Starter Plan — No API Access</p>
-                                <p className="text-amber-400/70">Upgrade to Pro or Enterprise to generate API keys and access higher rate limits.</p>
+                            <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs">
+                                <p className="font-semibold mb-1 text-amber-400">Starter Plan — API Keys Locked</p>
+                                <p className="text-amber-400/70 mb-2">You can test endpoints in the <Link href="/api-playground" className="text-primary underline hover:text-primary/80">API Playground</Link> for free, but generating API keys requires Pro or Enterprise.</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <Link
+                                        href="/select-plan"
+                                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-primary text-white rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
+                                    >
+                                        Upgrade for API Access →
+                                    </Link>
+                                    <span className="text-text-muted/50">Pro: 50K calls/mo • Enterprise: Unlimited</span>
+                                </div>
                             </div>
                         )}
 
