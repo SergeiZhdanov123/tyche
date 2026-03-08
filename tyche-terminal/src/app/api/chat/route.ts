@@ -24,7 +24,7 @@ Guidelines:
 export async function POST(req: NextRequest) {
     if (!DEEPSEEK_API_KEY) {
         return NextResponse.json(
-            { error: "DeepSeek API key not configured" },
+            { error: "AI API key not configured" },
             { status: 500 }
         );
     }
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
         if (!response.ok) {
             const err = await response.text();
-            console.error("DeepSeek error:", err);
+            console.error("AI API error:", err);
             return NextResponse.json(
                 { error: "AI service error", detail: err },
                 { status: response.status }

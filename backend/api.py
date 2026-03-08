@@ -1654,17 +1654,57 @@ class NewsResponse(BaseModel):
 
 
 def _detect_sentiment(text: str) -> Optional[str]:
-    """Simple keyword sentiment from title + description."""
+    """Keyword + bigram sentiment from title + description."""
     t = text.lower()
-    pos = ["beats", "strong", "record", "growth", "surge", "raises", "upgrade",
-           "bullish", "soars", "jumps", "rally", "profit", "outperform", "exceeds"]
-    neg = ["misses", "weak", "lawsuit", "decline", "probe", "cut", "downgrade",
-           "bearish", "plunge", "crash", "loss", "disappoints", "underperform", "warns"]
-    if any(w in t for w in pos):
+    pos = [
+        "beats", "beat", "strong", "record", "growth", "surge", "surges", "raises",
+        "upgrade", "upgrades", "bullish", "soars", "jumps", "rally", "rallies",
+        "profit", "outperform", "exceeds", "exceeded", "upbeat", "optimistic",
+        "boosts", "boost", "rises", "climbs", "gains", "higher", "tops",
+        "accelerates", "momentum", "positive", "bright", "robust", "expands",
+        "impressive", "smashes", "crushes", "blowout", "stellar", "windfall",
+        "upside", "confidence", "breakthrough", "milestone", "doubled",
+        "tripled", "rebounds", "recovers", "dividend", "buyback", "upgraded",
+    ]
+    neg = [
+        "misses", "missed", "miss", "weak", "lawsuit", "decline", "declines",
+        "probe", "cut", "cuts", "downgrade", "downgrades", "bearish", "plunge",
+        "plunges", "crash", "crashes", "loss", "losses", "disappoints",
+        "underperform", "warns", "warning", "slumps", "falls", "drops",
+        "lowers", "lowered", "recession", "layoffs", "layoff", "tumbles",
+        "sinks", "slides", "negative", "concern", "shortfall", "deficit",
+        "investigation", "fraud", "scandal", "bankruptcy", "defaults",
+        "downturn", "pressure", "struggles", "disappointing", "worst",
+        "slashes", "tanks", "plummets", "downgraded", "pullback",
+    ]
+    pos_bigrams = [
+        "beat estimates", "beat expectations", "topped estimates", "exceeded expectations",
+        "raised guidance", "above estimates", "strong demand", "record revenue",
+        "better than expected", "all time high", "revenue growth",
+    ]
+    neg_bigrams = [
+        "missed estimates", "missed expectations", "below estimates", "cut guidance",
+        "lowered guidance", "worse than expected", "revenue decline", "profit warning",
+        "below expectations", "market sell", "earnings miss",
+    ]
+    score = 0
+    for w in pos:
+        if w in t:
+            score += 1
+    for w in neg:
+        if w in t:
+            score -= 1
+    for bg in pos_bigrams:
+        if bg in t:
+            score += 2
+    for bg in neg_bigrams:
+        if bg in t:
+            score -= 2
+    if score > 0:
         return "positive"
-    if any(w in t for w in neg):
+    if score < 0:
         return "negative"
-    return None
+    return "neutral"
 
 
 def _clean_html(text: str) -> str:
@@ -2573,7 +2613,7 @@ async def deepseek_generate(prompt: str) -> str:
     if not DEEPSEEK_API_KEY:
         raise HTTPException(
             status_code=501,
-            detail="DEEPSEEK_API_KEY not set",
+            detail="AI API key not configured",
         )
 
     url = f"{DEEPSEEK_BASE_URL}/chat/completions"
@@ -2609,7 +2649,7 @@ async def deepseek_generate(prompt: str) -> str:
         if r.status_code != 200:
             raise HTTPException(
                 status_code=502,
-                detail=f"DeepSeek API error: {r.text[:500]}",
+                detail=f"AI API error: {r.text[:500]}",
             )
 
         data = r.json()
@@ -2619,7 +2659,7 @@ async def deepseek_generate(prompt: str) -> str:
     except Exception:
         raise HTTPException(
             status_code=502,
-            detail="Unexpected DeepSeek response format",
+            detail="Unexpected AI response format",
         )
 
 
@@ -3169,12 +3209,40 @@ async def calendar_upcoming(
 ):
     """
     Get upcoming earnings for the next N days.
+    Enriches events with EPS/revenue data from yfinance when missing.
     """
     events = await get_upcoming_earnings(days=days)
     
     today = dt.date.today()
     end = today + dt.timedelta(days=days)
-    
+
+    # Enrich events that are missing data using yfinance (batch)
+    needs_enrichment = [
+        e for e in events
+        if not e.eps_estimate or not e.revenue_estimate or not e.earnings_time or not e.market_cap
+    ]
+    if needs_enrichment:
+        to_enrich = needs_enrichment[:80]  # limit
+        loop = asyncio.get_event_loop()
+        enrich_tasks = [
+            loop.run_in_executor(_yf_executor, _yf_enrich_event, e.ticker)
+            for e in to_enrich
+        ]
+        enrich_results = await asyncio.gather(*enrich_tasks, return_exceptions=True)
+
+        for event, result in zip(to_enrich, enrich_results):
+            if isinstance(result, dict):
+                if not event.eps_estimate and result.get("eps_estimate"):
+                    event.eps_estimate = result["eps_estimate"]
+                if not event.eps_actual and result.get("eps_actual"):
+                    event.eps_actual = result["eps_actual"]
+                if not event.revenue_estimate and result.get("revenue_estimate"):
+                    event.revenue_estimate = result["revenue_estimate"]
+                if not event.market_cap and result.get("market_cap"):
+                    event.market_cap = result["market_cap"]
+                if not event.earnings_time and result.get("earnings_time"):
+                    event.earnings_time = result["earnings_time"]
+
     return CalendarResponse(
         start_date=today.isoformat(),
         end_date=end.isoformat(),
@@ -3599,6 +3667,87 @@ def _yf_fetch_ticker_data(ticker: str) -> dict:
     }
 
 
+def _yf_enrich_event(ticker: str) -> dict:
+    """
+    Enrich a single earnings event with data from yfinance.
+    Returns dict with eps_estimate, eps_actual, revenue_estimate, market_cap, earnings_time.
+    """
+    result = {}
+    try:
+        tk = yf.Ticker(ticker)
+        info = tk.info or {}
+
+        # Market cap
+        mc = info.get("marketCap")
+        if mc and isinstance(mc, (int, float)) and mc > 0:
+            if mc >= 1e12:
+                result["market_cap"] = f"${mc / 1e12:.2f}T"
+            elif mc >= 1e9:
+                result["market_cap"] = f"${mc / 1e9:.1f}B"
+            elif mc >= 1e6:
+                result["market_cap"] = f"${mc / 1e6:.0f}M"
+            else:
+                result["market_cap"] = f"${mc:,.0f}"
+
+        # EPS from info
+        fwd_eps = info.get("forwardEps")
+        trail_eps = info.get("trailingEps")
+        if fwd_eps is not None and str(fwd_eps) != "nan":
+            result["eps_estimate"] = f"${float(fwd_eps):.2f}"
+        if trail_eps is not None and str(trail_eps) != "nan":
+            result["eps_actual"] = f"${float(trail_eps):.2f}"
+
+        # Revenue estimate
+        rev = info.get("revenueEstimate") or info.get("totalRevenue")
+        if rev and isinstance(rev, (int, float)) and rev > 0:
+            if rev >= 1e9:
+                result["revenue_estimate"] = f"${rev / 1e9:.2f}B"
+            elif rev >= 1e6:
+                result["revenue_estimate"] = f"${rev / 1e6:.0f}M"
+            else:
+                result["revenue_estimate"] = f"${rev:,.0f}"
+
+        # BMO/AMC from earningsTimestamp
+        ts = info.get("earningsTimestamp")
+        if ts and isinstance(ts, (int, float)) and ts > 1000000000:
+            import datetime as _dt
+            hour = _dt.datetime.fromtimestamp(ts).hour
+            result["earnings_time"] = "BMO" if hour < 14 else "AMC"
+        else:
+            # Fallback to earningsCallTimestampStart
+            call_ts = info.get("earningsCallTimestampStart")
+            if call_ts and isinstance(call_ts, (int, float)) and call_ts > 1000000000:
+                import datetime as _dt
+                hour = _dt.datetime.fromtimestamp(call_ts).hour
+                result["earnings_time"] = "BMO" if hour < 14 else "AMC"
+
+        # Try earnings_dates for more precise EPS data
+        try:
+            ed = tk.earnings_dates
+            if ed is not None and not ed.empty:
+                # Get the most recent upcoming/recent row
+                latest = ed.iloc[0]
+                eps_est = latest.get("EPS Estimate")
+                eps_act = latest.get("Reported EPS")
+                rev_est = latest.get("Revenue Estimate")
+                if eps_est is not None and str(eps_est) != "nan":
+                    result["eps_estimate"] = f"${float(eps_est):.2f}"
+                if eps_act is not None and str(eps_act) != "nan":
+                    result["eps_actual"] = f"${float(eps_act):.2f}"
+                if rev_est is not None and str(rev_est) != "nan":
+                    rev_val = float(rev_est)
+                    if rev_val >= 1e9:
+                        result["revenue_estimate"] = f"${rev_val / 1e9:.2f}B"
+                    elif rev_val >= 1e6:
+                        result["revenue_estimate"] = f"${rev_val / 1e6:.0f}M"
+        except Exception:
+            pass
+
+    except Exception:
+        pass
+    return result
+
+
 def _yf_fetch_earnings_history(ticker: str) -> list:
     """Get past earnings history with actual/estimate EPS."""
     try:
@@ -3705,7 +3854,9 @@ async def earnings_surprises(
             unique_events.append(e)
 
     # For top tickers, fetch actual earnings history concurrently
-    top_events = unique_events[:40]  # Limit to avoid too many requests
+    # Scale limit proportionally with days_back
+    limit = min(len(unique_events), max(60, days_back * 15))
+    top_events = unique_events[:limit]
     loop = asyncio.get_event_loop()
     history_tasks = [
         loop.run_in_executor(_yf_executor, _yf_fetch_earnings_history, e.ticker)

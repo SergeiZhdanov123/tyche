@@ -215,7 +215,7 @@ console.log(data);`,
             {
                 method: "GET",
                 path: "/company/{ticker}/earnings-ai-review",
-                description: "AI-generated earnings analysis powered by DeepSeek. Produces a markdown write-up covering revenue trends, profitability, balance sheet health, and outlook.",
+                description: "AI-generated earnings analysis. Produces a markdown write-up covering revenue trends, profitability, balance sheet health, and outlook.",
                 params: [
                     { name: "ticker", type: "path", description: "Stock ticker", required: true },
                 ],
@@ -224,7 +224,7 @@ console.log(data);`,
   "fy": 2024, "fp": "Q4",
   "period_end": "2024-09-28",
   "generated_at": "2025-02-10T19:00:00Z",
-  "model": "deepseek-chat",
+  "model": "ai-chat",
   "analysis_markdown": "## Apple Q4 FY2024 Earnings Review\\n\\n### Revenue..."
 }`,
                 curl: `curl "${BASE}/company/AAPL/earnings-ai-review"`,

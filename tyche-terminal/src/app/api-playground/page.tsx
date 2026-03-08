@@ -109,7 +109,7 @@ const ENDPOINTS: CategoryDef[] = [
             {
                 method: "GET",
                 path: "/company/{ticker}/earnings-ai-review",
-                description: "AI-generated earnings analysis (DeepSeek)",
+                description: "AI-generated earnings analysis",
                 params: [
                     { name: "ticker", type: "path", required: true, description: "Stock ticker", placeholder: "META" },
                 ],

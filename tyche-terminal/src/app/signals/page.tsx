@@ -220,7 +220,7 @@ Be specific with numbers, price levels, and percentages. Reference recent data. 
     };
 
     return (
-        <DashboardLayout title="Trading Signals" subtitle="AI-powered signals from DeepSeek analysis">
+        <DashboardLayout title="Trading Signals" subtitle="AI-powered trading signals and analysis">
             {/* Filters */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -326,7 +326,7 @@ Be specific with numbers, price levels, and percentages. Reference recent data. 
                     className="flex flex-col items-center justify-center py-20"
                 >
                     <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-sm text-text-muted">Generating AI signals with DeepSeek...</p>
+                    <p className="text-sm text-text-muted">Generating AI signals...</p>
                     <p className="text-xs text-text-muted/50 mt-1">Analyzing {analysisTickers.length} stocks — one signal per ticker</p>
                 </motion.div>
             ) : error ? (
@@ -537,8 +537,8 @@ Be specific with numbers, price levels, and percentages. Reference recent data. 
                                             <span className="text-sm text-text-muted">Generating deep analysis for {selectedSignal.symbol}...</span>
                                         </div>
                                     ) : selectedSignal.deepAnalysis ? (
-                                        <div className="prose prose-invert prose-sm max-w-none text-text-muted leading-relaxed whitespace-pre-wrap">
-                                            {selectedSignal.deepAnalysis}
+                                        <div className="prose prose-invert prose-sm max-w-none text-text-muted leading-relaxed">
+                                            {renderMarkdown(selectedSignal.deepAnalysis)}
                                         </div>
                                     ) : (
                                         <p className="text-sm text-text-muted/50 text-center py-4">Analysis will load shortly...</p>
@@ -548,7 +548,7 @@ Be specific with numbers, price levels, and percentages. Reference recent data. 
 
                             {/* Modal Footer */}
                             <div className="px-8 py-4 border-t border-border flex items-center justify-between">
-                                <p className="text-[10px] text-text-muted/30">Powered by DeepSeek AI • Not financial advice</p>
+                                <p className="text-[10px] text-text-muted/30">Powered by AI Insights • Not financial advice</p>
                                 <button
                                     onClick={() => setSelectedSignal(null)}
                                     className="px-4 py-2 text-sm text-text-muted hover:text-text-main transition-colors"
@@ -563,8 +563,76 @@ Be specific with numbers, price levels, and percentages. Reference recent data. 
 
             {/* Powered by */}
             <p className="text-center text-[10px] text-text-muted/30 mt-6">
-                Powered by DeepSeek AI • Signals are AI-generated and not financial advice
+                Powered by AI Insights • Signals are AI-generated and not financial advice
             </p>
         </DashboardLayout>
     );
+}
+
+/* ── Markdown renderer for deep analysis ──────────────────── */
+
+function renderMarkdown(content: string): React.ReactNode {
+    const blocks = content.split(/\n\n+/);
+    return blocks.map((block, bi) => {
+        const trimmed = block.trim();
+        if (!trimmed) return null;
+
+        // Heading
+        const hm = trimmed.match(/^(#{1,3})\s+(.+)$/m);
+        if (hm) {
+            const cls = hm[1].length === 1
+                ? "text-base font-bold text-text-main mt-4 mb-1"
+                : hm[1].length === 2
+                    ? "text-sm font-bold text-text-main mt-3 mb-1"
+                    : "text-sm font-semibold text-primary mt-2 mb-0.5";
+            return <div key={bi} className={cls}>{mdInline(hm[2])}</div>;
+        }
+
+        // Bullet list
+        if (/^[-*•]\s/.test(trimmed)) {
+            const items = trimmed.split(/\n/).filter(l => l.trim());
+            return (
+                <ul key={bi} className="space-y-1 my-1.5 ml-3">
+                    {items.map((item, ii) => (
+                        <li key={ii} className="flex items-start gap-2 text-sm">
+                            <span className="text-primary/60 mt-1 text-[6px]">●</span>
+                            <span>{mdInline(item.replace(/^[-*•]\s*/, ""))}</span>
+                        </li>
+                    ))}
+                </ul>
+            );
+        }
+
+        // Numbered list
+        if (/^\d+[.)]\s/.test(trimmed)) {
+            const items = trimmed.split(/\n/).filter(l => l.trim());
+            return (
+                <ol key={bi} className="space-y-1 my-1.5 ml-3">
+                    {items.map((item, ii) => (
+                        <li key={ii} className="flex items-start gap-2 text-sm">
+                            <span className="text-primary/60 font-mono text-xs mt-0.5 w-4 shrink-0">{ii + 1}.</span>
+                            <span>{mdInline(item.replace(/^\d+[.)]\s*/, ""))}</span>
+                        </li>
+                    ))}
+                </ol>
+            );
+        }
+
+        return <p key={bi} className="text-sm my-1">{mdInline(trimmed)}</p>;
+    });
+}
+
+function mdInline(text: string): React.ReactNode {
+    const parts = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+    return parts.map((part, i) => {
+        if (part.startsWith("***") && part.endsWith("***"))
+            return <strong key={i} className="font-bold italic text-text-main">{part.slice(3, -3)}</strong>;
+        if (part.startsWith("**") && part.endsWith("**"))
+            return <strong key={i} className="font-bold text-text-main">{part.slice(2, -2)}</strong>;
+        if (part.startsWith("*") && part.endsWith("*"))
+            return <em key={i} className="italic">{part.slice(1, -1)}</em>;
+        if (part.startsWith("`") && part.endsWith("`"))
+            return <code key={i} className="bg-white/10 px-1 rounded text-emerald-300 text-xs font-mono">{part.slice(1, -1)}</code>;
+        return part;
+    });
 }

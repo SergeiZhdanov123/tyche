@@ -332,7 +332,7 @@ Be specific and data-driven.`
                             </div>
 
                             <div className="px-8 py-4 border-t border-border">
-                                <p className="text-[10px] text-text-muted/30">Powered by DeepSeek AI • SEC filing analysis is for informational purposes only</p>
+                                <p className="text-[10px] text-text-muted/30">Powered by AI Insights • SEC filing analysis is for informational purposes only</p>
                             </div>
                         </motion.div>
                     </motion.div>

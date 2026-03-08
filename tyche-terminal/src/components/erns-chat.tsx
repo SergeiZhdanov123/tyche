@@ -212,7 +212,7 @@ export function ErnsChat() {
                                 </svg>
                             </button>
                         </div>
-                        <p className="text-[9px] text-text-muted/30 text-center mt-1.5">Powered by DeepSeek • Erns AI</p>
+                        <p className="text-[9px] text-text-muted/30 text-center mt-1.5">Powered by AI • Erns Intelligence</p>
                     </div>
                 </div>
             )}
@@ -220,7 +220,90 @@ export function ErnsChat() {
     );
 }
 
-// Simple formatting for bold text in AI responses
-function formatAIResponse(content: string): string {
-    return content;
+// Render markdown-like AI responses as proper JSX
+function formatAIResponse(content: string): React.ReactNode {
+    // Split into blocks by double newline
+    const blocks = content.split(/\n\n+/);
+
+    return blocks.map((block, bi) => {
+        const trimmed = block.trim();
+        if (!trimmed) return null;
+
+        // Heading: ### or ## or #
+        const headingMatch = trimmed.match(/^(#{1,3})\s+(.+)$/m);
+        if (headingMatch) {
+            const level = headingMatch[1].length;
+            const text = headingMatch[2];
+            const className = level === 1
+                ? "text-sm font-bold text-text-main mt-3 mb-1"
+                : level === 2
+                    ? "text-xs font-bold text-text-main mt-2 mb-1"
+                    : "text-xs font-semibold text-primary mt-2 mb-0.5";
+            return <div key={bi} className={className}>{inlineFormat(text)}</div>;
+        }
+
+        // Bullet list
+        if (/^[-*•]\s/.test(trimmed)) {
+            const items = trimmed.split(/\n/).filter(l => l.trim());
+            return (
+                <ul key={bi} className="space-y-0.5 my-1 ml-2">
+                    {items.map((item, ii) => (
+                        <li key={ii} className="flex items-start gap-1.5">
+                            <span className="text-primary/60 mt-0.5 text-[8px]">●</span>
+                            <span>{inlineFormat(item.replace(/^[-*•]\s*/, ""))}</span>
+                        </li>
+                    ))}
+                </ul>
+            );
+        }
+
+        // Numbered list
+        if (/^\d+[.)]\s/.test(trimmed)) {
+            const items = trimmed.split(/\n/).filter(l => l.trim());
+            return (
+                <ol key={bi} className="space-y-0.5 my-1 ml-2">
+                    {items.map((item, ii) => (
+                        <li key={ii} className="flex items-start gap-1.5">
+                            <span className="text-primary/60 font-mono text-[9px] mt-0.5 w-3 shrink-0">{ii + 1}.</span>
+                            <span>{inlineFormat(item.replace(/^\d+[.)]\s*/, ""))}</span>
+                        </li>
+                    ))}
+                </ol>
+            );
+        }
+
+        // Code block
+        if (trimmed.startsWith("```")) {
+            const code = trimmed.replace(/^```\w*\n?/, "").replace(/```$/, "").trim();
+            return (
+                <pre key={bi} className="bg-white/5 rounded-lg p-2 my-1 overflow-x-auto">
+                    <code className="text-[10px] font-mono text-emerald-300">{code}</code>
+                </pre>
+            );
+        }
+
+        // Regular paragraph
+        return <p key={bi} className="my-0.5">{inlineFormat(trimmed)}</p>;
+    });
+}
+
+// Handle inline formatting: bold, italic, code, bold+italic
+function inlineFormat(text: string): React.ReactNode {
+    // Split by inline patterns: ***bold italic***, **bold**, *italic*, `code`
+    const parts = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+    return parts.map((part, i) => {
+        if (part.startsWith("***") && part.endsWith("***")) {
+            return <strong key={i} className="font-bold italic text-text-main">{part.slice(3, -3)}</strong>;
+        }
+        if (part.startsWith("**") && part.endsWith("**")) {
+            return <strong key={i} className="font-bold text-text-main">{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith("*") && part.endsWith("*")) {
+            return <em key={i} className="italic text-text-main/80">{part.slice(1, -1)}</em>;
+        }
+        if (part.startsWith("`") && part.endsWith("`")) {
+            return <code key={i} className="bg-white/10 px-1 rounded text-emerald-300 text-[10px] font-mono">{part.slice(1, -1)}</code>;
+        }
+        return part;
+    });
 }
