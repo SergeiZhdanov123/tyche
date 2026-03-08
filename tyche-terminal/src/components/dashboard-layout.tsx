@@ -159,7 +159,7 @@ const sidebarItems = [
             </svg>
         ), label: "Sentiment", href: "/earnings-sentiment"
     },
-    { icon: Icons.API, label: "API Access", href: "/api-access" },
+    { icon: Icons.API, label: "API Access", href: "/api-access", badge: "PRO" },
     { icon: Icons.Playground, label: "API Playground", href: "/api-playground" },
 ];
 
@@ -194,15 +194,15 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
         }
     }, [isLoaded, isSignedIn, router]);
 
-    // Check first-time user
+    // Check first-time user — keyed per user so tutorial plays on first login
     useEffect(() => {
-        if (isLoaded && isSignedIn) {
-            const completed = localStorage.getItem("onboarding-completed");
+        if (isLoaded && isSignedIn && user?.id) {
+            const completed = localStorage.getItem(`onboarding-completed-${user.id}`);
             if (!completed) {
                 setShowOnboarding(true);
             }
         }
-    }, [isLoaded, isSignedIn]);
+    }, [isLoaded, isSignedIn, user?.id]);
 
     // Fetch notifications
     const fetchNotifications = useCallback(async () => {
@@ -270,7 +270,9 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
 
     const handleOnboardingComplete = () => {
         setShowOnboarding(false);
-        localStorage.setItem("onboarding-completed", "true");
+        if (user?.id) {
+            localStorage.setItem(`onboarding-completed-${user.id}`, "true");
+        }
     };
 
     const handleLogout = async () => {

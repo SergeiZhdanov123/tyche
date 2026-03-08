@@ -292,6 +292,7 @@ export default function ApiPlaygroundPage() {
     const [status, setStatus] = useState<number | null>(null);
     const [elapsed, setElapsed] = useState<number | null>(null);
     const [codeTab, setCodeTab] = useState<"curl" | "python" | "javascript">("curl");
+    const [starterRequestCount, setStarterRequestCount] = useState(0);
 
     const category = ENDPOINTS[selectedCategory];
     const endpoint = category.endpoints[selectedEndpoint];
@@ -324,6 +325,8 @@ export default function ApiPlaygroundPage() {
     }, [endpoint, paramValues]);
 
     const executeRequest = async () => {
+        // Enforce Starter limit
+        if (isStarter && starterRequestCount >= 5) return;
         setLoading(true);
         setResponse(null);
         setStatus(null);
@@ -337,6 +340,10 @@ export default function ApiPlaygroundPage() {
 
             const json = await res.json();
             setResponse(JSON.stringify(json, null, 2));
+            // Track Starter usage
+            if (isStarter) {
+                setStarterRequestCount(c => c + 1);
+            }
         } catch (err) {
             setElapsed(Math.round(performance.now() - t0));
             setStatus(0);
@@ -381,29 +388,18 @@ export default function ApiPlaygroundPage() {
     return (
         <DashboardLayout title="API Playground">
             <div className="relative flex h-full">
-                {/* ─── Starter Gate Overlay ─── */}
-                {!subLoading && !isPaid && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-background/70 rounded-2xl">
-                        <div className="text-center px-6 py-10 max-w-md">
-                            <div className="w-16 h-16 rounded-full bg-surface/80 border border-white/10 flex items-center justify-center mx-auto mb-5 shadow-lg">
-                                <svg className="w-8 h-8 text-primary/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                                </svg>
-                            </div>
-                            <h2 className="text-xl font-bold text-text-main mb-2">API Playground — Pro Feature</h2>
-                            <p className="text-text-muted text-sm mb-6 leading-relaxed">
-                                The API Playground lets you interactively test every Erns endpoint with live responses. Upgrade to <strong className="text-primary">Pro</strong> or <strong className="text-primary">Enterprise</strong> to unlock full API access.
-                            </p>
-                            <Link
-                                href="/pricing"
-                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-semibold transition-colors shadow-md"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                                Upgrade Plan
-                            </Link>
+                {/* ─── Starter Request Limit Banner ─── */}
+                {!subLoading && isStarter && (
+                    <div className="absolute top-0 left-0 right-0 z-40 p-3 bg-gradient-to-r from-amber-500/10 to-cyan-500/10 border-b border-amber-500/20 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-amber-400 text-xs font-semibold">Starter Plan — {Math.max(0, 5 - starterRequestCount)}/5 free requests remaining</span>
                         </div>
+                        <Link
+                            href="/select-plan"
+                            className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-primary text-white rounded-lg text-[10px] font-bold hover:opacity-90 transition-opacity"
+                        >
+                            Upgrade for Unlimited →
+                        </Link>
                     </div>
                 )}
                 {/* ─── Endpoint Browser ─── */}
@@ -509,7 +505,7 @@ export default function ApiPlaygroundPage() {
                             {/* Execute Button */}
                             <button
                                 onClick={executeRequest}
-                                disabled={loading}
+                                disabled={loading || (isStarter && starterRequestCount >= 5)}
                                 className="w-full mt-6 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {loading ? (
