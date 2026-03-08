@@ -88,22 +88,26 @@ export default function SignalsPage() {
                 body: JSON.stringify({
                     messages: [{
                         role: "user",
-                        content: `You are a professional trading signal generator. Analyze these ${signalCount} stocks and generate EXACTLY ONE unique signal per stock: ${tickerList}.
+                        content: `You are a professional trading signal generator. Today's date is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.
 
-For each stock, provide a trading signal based on current market conditions. Each signal must be for a DIFFERENT stock — do NOT repeat any ticker.
+CRITICAL: All analysis must reference CURRENT data as of today. Do NOT reference outdated quarters or past years as if they are current.
+
+Analyze these ${signalCount} stocks and generate EXACTLY ONE unique signal per stock: ${tickerList}.
+
+For each stock, provide a trading signal based on CURRENT market conditions as of today. Each signal must be for a DIFFERENT stock — do NOT repeat any ticker.
 
 Return a JSON array of ${signalCount} objects with these fields:
 - "type": "bullish", "bearish", or "neutral"
 - "symbol": the ticker symbol (must match one from the list above, each used only ONCE)
 - "title": short signal title (e.g. "Earnings Momentum", "Support Break Risk", "Consolidation Phase")
-- "description": 2-3 sentence specific analysis with data points, price levels, and reasoning
+- "description": 2-3 sentence specific analysis. Include CURRENT price levels, recent earnings dates, specific percentage moves, and concrete reasoning. Do NOT be vague.
 - "confidence": number 50-95 representing conviction percentage
 - "category": one of "Earnings", "Technical", "Fundamental", "Momentum", "Macro", "AI Insight"
-- "keyLevels": {"support": "price", "resistance": "price"} — key technical levels
-- "catalysts": array of 2-3 upcoming catalysts or key drivers
+- "keyLevels": {"support": "$price", "resistance": "$price"} — current key technical levels with dollar signs
+- "catalysts": array of 2-3 specific upcoming catalysts with approximate dates (e.g. "Q1 2026 earnings March 28", "Fed meeting March 19")
 - "risk": one sentence describing the primary risk to this thesis
 
-Be specific, data-driven, and realistic. Reference actual market dynamics.
+Be specific with real price levels, percentages, and recent events. No filler text.
 
 IMPORTANT: Return ONLY the raw JSON array. No markdown, no code blocks, no explanations.`
                     }]
@@ -176,18 +180,37 @@ IMPORTANT: Return ONLY the raw JSON array. No markdown, no code blocks, no expla
                 body: JSON.stringify({
                     messages: [{
                         role: "user",
-                        content: `Provide a comprehensive deep-dive trading analysis for ${signal.symbol}. The current signal is ${signal.type} with the thesis: "${signal.title} — ${signal.description}"
+                        content: `Today's date is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.
 
-Structure your analysis with these sections:
-1. **Overview** — Current market position and sentiment summary
-2. **Technical Analysis** — Key support/resistance, moving averages, RSI, MACD, volume profile
-3. **Fundamental Analysis** — Recent earnings, revenue trends, P/E ratio, forward guidance
-4. **Catalyst Timeline** — Upcoming events that could move the stock (earnings dates, product launches, Fed meetings)
-5. **Risk Assessment** — Bear case scenarios and downside risks
-6. **Trade Setup** — Suggested entry zone, targets, and stop loss levels
-7. **Conviction Rating** — Final assessment with reasoning
+Provide an actionable deep-dive analysis for ${signal.symbol}. The current signal is **${signal.type}** with the thesis: "${signal.title} — ${signal.description}"
 
-Be specific with numbers, price levels, and percentages. Reference recent data. Keep it under 500 words but make every word count.`
+CRITICAL RULES:
+- All data must be CURRENT as of today's date. Do NOT reference 2024 data as if it's current.
+- Every section MUST include specific numbers (prices, percentages, ratios, dates).
+- No filler paragraphs. Every sentence must add value.
+- Use markdown formatting: ## for section headers, **bold** for key numbers, bullet points for lists.
+
+Structure:
+
+## Current Position
+Exact current price, 52-week range, where it sits relative to major moving averages (50/200 day).
+
+## Recent Earnings (Most Recent Quarter)
+Exact EPS reported vs estimate, revenue reported vs estimate, surprise %, YoY growth rate. What guidance did management give?
+
+## Technical Setup
+Specific support/resistance levels with dollar prices. RSI reading. Whether it's above/below key moving averages. Volume trend.
+
+## Upcoming Catalysts
+Bullet list of 3-5 specific events with dates: next earnings date, ex-dividend date, product launches, regulatory decisions, macro events.
+
+## Risk Factors
+2-3 specific risks with concrete scenarios (e.g. "If revenue misses by >5%, stock could test $XXX support").
+
+## Trade Setup
+Entry zone (specific price range), target price, stop loss level. Risk/reward ratio.
+
+Keep it under 400 words. Dense with data, zero fluff.`
                     }]
                 }),
             });
