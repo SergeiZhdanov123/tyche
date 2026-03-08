@@ -383,11 +383,21 @@ export default function DashboardPage() {
                                 ) : (
                                     newsHeadlines.slice(0, 5).map((article, i) => (
                                         <a key={i} href={article.url} target="_blank" rel="noopener noreferrer"
-                                            className="block px-5 py-3 hover:bg-white/[0.02] transition-colors group">
-                                            <p className="text-xs text-text-main line-clamp-2 group-hover:text-primary transition-colors leading-relaxed">{article.title}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] text-primary">{article.source}</span>
-                                                <span className="text-[10px] text-text-muted">{timeAgo(article.published_at || article.publishedAt || "")}</span>
+                                            className="flex gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors group">
+                                            {article.image_url && (
+                                                <img
+                                                    src={article.image_url}
+                                                    alt=""
+                                                    className="w-16 h-12 object-cover rounded-lg flex-shrink-0 bg-white/5"
+                                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                            )}
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs text-text-main line-clamp-2 group-hover:text-primary transition-colors leading-relaxed">{article.title}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] text-primary">{article.source}</span>
+                                                    <span className="text-[10px] text-text-muted">{timeAgo(article.published_at || article.publishedAt || "")}</span>
+                                                </div>
                                             </div>
                                         </a>
                                     ))

@@ -7,7 +7,9 @@ import { usePriceBars, useQuote } from "@/hooks/useMarketData";
 import { useEarningsSummary, useEarningsAnalysts, useCompanyEarningsEvents, useEarningsReaction } from "@/hooks/useEarnings";
 import { getEPSHistory, type EPSQuarter, type PriceBar, type EarningsEvent } from "@/lib/api";
 
-type RangeType = '1M' | '3M' | '6M' | '1Y' | '5Y';
+type RangeType = '1D' | '1M' | '3M' | '6M' | '1Y' | '5Y';
+type ChartType = 'candle' | 'line';
+type TimespanType = 'minute' | 'hour' | 'day' | 'week';
 
 function formatCurrency(val: number | null | undefined) {
     if (val == null) return "—";
@@ -47,6 +49,15 @@ export default function ChartPage() {
     const [compareTicker, setCompareTicker] = useState<string | null>(null);
     const [compareQuery, setCompareQuery] = useState("");
     const [range, setRange] = useState<RangeType>('1Y');
+    const [chartType, setChartType] = useState<ChartType>('candle');
+    const [timespan, setTimespan] = useState<TimespanType>('day');
+
+    // Auto-select appropriate timespan when range changes
+    const effectiveTimespan = useMemo(() => {
+        if (range === '1D') return 'minute';
+        if (range === '1M') return timespan === 'minute' ? 'hour' : timespan;
+        return timespan;
+    }, [range, timespan]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -66,8 +77,8 @@ export default function ChartPage() {
     };
 
     // Data Hooks for primary ticker
-    const { bars, loading: barsLoading } = usePriceBars(activeTicker || undefined, range, 'day');
-    const { bars: compareBars } = usePriceBars(compareTicker || undefined, range, 'day');
+    const { bars, loading: barsLoading } = usePriceBars(activeTicker || undefined, range, effectiveTimespan);
+    const { bars: compareBars } = usePriceBars(compareTicker || undefined, range, effectiveTimespan);
     const { quote } = useQuote(activeTicker || undefined);
     const { summary } = useEarningsSummary(activeTicker || undefined);
     const { analysts } = useEarningsAnalysts(activeTicker || undefined);
@@ -140,7 +151,7 @@ export default function ChartPage() {
                                             )}
                                         </div>
                                         <div className="flex bg-background/50 rounded-lg p-1 border border-white/5">
-                                            {(['1M', '3M', '6M', '1Y', '5Y'] as RangeType[]).map((r) => (
+                                            {(['1D', '1M', '3M', '6M', '1Y', '5Y'] as RangeType[]).map((r) => (
                                                 <button
                                                     key={r}
                                                     onClick={() => setRange(r)}
@@ -150,6 +161,44 @@ export default function ChartPage() {
                                                 </button>
                                             ))}
                                         </div>
+                                        {/* Chart Type Toggle */}
+                                        <div className="flex bg-background/50 rounded-lg p-1 border border-white/5">
+                                            <button
+                                                onClick={() => setChartType('candle')}
+                                                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${chartType === 'candle' ? 'bg-white/10 text-white shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-white/5'}`}
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                    <line x1="4" y1="1" x2="4" y2="13" />
+                                                    <rect x="2" y="4" width="4" height="5" rx="0.5" fill="currentColor" />
+                                                    <line x1="10" y1="2" x2="10" y2="12" />
+                                                    <rect x="8" y="5" width="4" height="4" rx="0.5" fill="currentColor" />
+                                                </svg>
+                                                Candle
+                                            </button>
+                                            <button
+                                                onClick={() => setChartType('line')}
+                                                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${chartType === 'line' ? 'bg-white/10 text-white shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-white/5'}`}
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                    <path d="M1 10 L4 6 L7 8 L10 3 L13 5" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                                Line
+                                            </button>
+                                        </div>
+                                        {/* Timeframe Granularity */}
+                                        {range !== '1D' && (
+                                            <div className="flex bg-background/50 rounded-lg p-1 border border-white/5">
+                                                {(['hour', 'day', 'week'] as TimespanType[]).map((t) => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => setTimespan(t)}
+                                                        className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors ${effectiveTimespan === t ? 'bg-white/10 text-white shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-white/5'}`}
+                                                    >
+                                                        {t === 'hour' ? '1H' : t === 'day' ? '1D' : '1W'}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="relative overflow-hidden" style={{ height: '460px' }}>
                                         {barsLoading ? (
@@ -166,6 +215,7 @@ export default function ChartPage() {
                                                 compareBars={compareBars}
                                                 compareTicker={compareTicker}
                                                 earningsEvents={earningsEvents}
+                                                chartType={chartType}
                                             />
                                         )}
                                     </div>
@@ -550,11 +600,13 @@ function InteractiveSVGChart({
     compareBars,
     compareTicker,
     earningsEvents,
+    chartType = 'candle',
 }: {
     bars: PriceBar[];
     compareBars?: PriceBar[];
     compareTicker?: string | null;
     earningsEvents: EarningsEvent[];
+    chartType?: ChartType;
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
@@ -750,30 +802,78 @@ function InteractiveSVGChart({
                     <path d={compareLinePath} fill="none" stroke="rgba(34,211,238,0.7)" strokeWidth="2" />
                 )}
 
-                {/* Candles + Volume */}
+                {/* Candles or Line */}
                 <g>
-                    {bars.map((b, i) => {
-                        const x = xScale(i);
-                        const isUp = b.c >= b.o;
-                        const color = isUp ? "rgb(34,197,94)" : "rgb(239,68,68)";
-                        const yTop = yScale(Math.max(b.o, b.c));
-                        const yBot = yScale(Math.min(b.o, b.c));
+                    {chartType === 'candle' ? (
+                        bars.map((b, i) => {
+                            const x = xScale(i);
+                            const isUp = b.c >= b.o;
+                            const color = isUp ? "rgb(34,197,94)" : "rgb(239,68,68)";
+                            const yTop = yScale(Math.max(b.o, b.c));
+                            const yBot = yScale(Math.min(b.o, b.c));
 
-                        return (
-                            <g key={i}>
-                                <line x1={x} y1={yScale(b.h)} x2={x} y2={yScale(b.l)} stroke={color} strokeWidth={1} />
-                                <rect x={x - candleWidth / 2} y={yTop} width={candleWidth} height={Math.max(1, yBot - yTop)} fill={color} />
-                                <rect
-                                    x={x - candleWidth / 2}
-                                    y={margin.top + priceHeight + 10 + volumeHeight - vScale(b.v)}
-                                    width={candleWidth}
-                                    height={vScale(b.v)}
-                                    fill={color}
-                                    opacity={0.25}
-                                />
-                            </g>
-                        );
-                    })}
+                            return (
+                                <g key={i}>
+                                    <line x1={x} y1={yScale(b.h)} x2={x} y2={yScale(b.l)} stroke={color} strokeWidth={1} />
+                                    <rect x={x - candleWidth / 2} y={yTop} width={candleWidth} height={Math.max(1, yBot - yTop)} fill={color} />
+                                    <rect
+                                        x={x - candleWidth / 2}
+                                        y={margin.top + priceHeight + 10 + volumeHeight - vScale(b.v)}
+                                        width={candleWidth}
+                                        height={vScale(b.v)}
+                                        fill={color}
+                                        opacity={0.25}
+                                    />
+                                </g>
+                            );
+                        })
+                    ) : (
+                        <>
+                            {/* Line chart: area fill + line */}
+                            <defs>
+                                <linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="rgb(0,230,118)" stopOpacity="0.25" />
+                                    <stop offset="100%" stopColor="rgb(0,230,118)" stopOpacity="0.02" />
+                                </linearGradient>
+                            </defs>
+                            {/* Area fill */}
+                            <path
+                                d={
+                                    `M ${xScale(0)} ${yScale(bars[0].c)} ` +
+                                    bars.map((b, i) => `L ${xScale(i)} ${yScale(b.c)}`).join(' ') +
+                                    ` L ${xScale(bars.length - 1)} ${margin.top + priceHeight} L ${xScale(0)} ${margin.top + priceHeight} Z`
+                                }
+                                fill="url(#lineAreaGrad)"
+                            />
+                            {/* Line */}
+                            <path
+                                d={
+                                    `M ${xScale(0)} ${yScale(bars[0].c)} ` +
+                                    bars.map((b, i) => `L ${xScale(i)} ${yScale(b.c)}`).join(' ')
+                                }
+                                fill="none"
+                                stroke="rgb(0,230,118)"
+                                strokeWidth="2"
+                            />
+                            {/* Volume bars still shown */}
+                            {bars.map((b, i) => {
+                                const x = xScale(i);
+                                const isUp = b.c >= b.o;
+                                const color = isUp ? "rgb(34,197,94)" : "rgb(239,68,68)";
+                                return (
+                                    <rect
+                                        key={i}
+                                        x={x - candleWidth / 2}
+                                        y={margin.top + priceHeight + 10 + volumeHeight - vScale(b.v)}
+                                        width={candleWidth}
+                                        height={vScale(b.v)}
+                                        fill={color}
+                                        opacity={0.25}
+                                    />
+                                );
+                            })}
+                        </>
+                    )}
                 </g>
 
                 {/* Earnings Markers */}

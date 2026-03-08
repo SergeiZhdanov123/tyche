@@ -128,7 +128,7 @@ export default function NewsPage() {
                             transition={{ delay: i * 0.03 }}
                             className="group bg-surface/80 backdrop-blur-sm border border-border rounded-2xl overflow-hidden hover:border-primary/30 transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.05)]"
                         >
-                            {article.image_url && (
+                            {article.image_url ? (
                                 <div className="h-40 overflow-hidden relative">
                                     <img
                                         src={article.image_url}
@@ -136,6 +136,16 @@ export default function NewsPage() {
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                     />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
+                                </div>
+                            ) : (
+                                <div className="h-32 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-surface to-cyan-500/5" />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <svg className="w-10 h-10 text-primary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6V7.5z" />
+                                        </svg>
+                                    </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
                                 </div>
                             )}
