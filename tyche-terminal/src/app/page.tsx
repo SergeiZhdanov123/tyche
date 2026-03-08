@@ -81,7 +81,7 @@ function Reveal({ children, className = "", delay = 0 }: {
     <motion.div ref={ref}
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as [number, number, number, number], delay }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number], delay }}
       className={className}
     >{children}</motion.div>
   );
@@ -92,11 +92,11 @@ function Reveal({ children, className = "", delay = 0 }: {
    ═══════════════════════════════════════════════════════════════ */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.06, delayChildren: 0.03 } },
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.02 } },
 };
 const staggerChild = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -184,7 +184,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════
           HERO — Cinematic entrance
           ══════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-16">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-16 pb-32">
         {/* Grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         <GlowOrb color="rgba(0,230,118,0.14)" size={900} top="25%" left="50%" />
@@ -200,7 +200,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ duration: 0.35, delay: 0.05 }}
             className="mb-8 md:mb-10"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-primary shadow-[0_0_40px_-5px_rgba(0,230,118,0.35)]">
@@ -216,7 +216,7 @@ export default function Home() {
           <motion.h1
             initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-text-main leading-[1.05]"
           >
             Asymmetric Returns.
@@ -228,7 +228,7 @@ export default function Home() {
           <motion.p
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            transition={{ duration: 0.35, delay: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
             className="mt-6 md:mt-8 max-w-2xl text-base sm:text-lg text-text-muted md:text-xl leading-relaxed px-2"
           >
             SEC filings parsed in real-time. AI-powered contrarian signals.
@@ -240,7 +240,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.4 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
             className="mt-10 md:mt-14 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
           >
             <Link href="/sign-up" className="w-full sm:w-auto">
@@ -273,8 +273,8 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.5 }}
-            className="mt-16 md:mt-24 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-12 md:gap-16"
+            transition={{ duration: 0.3, delay: 0.35 }}
+            className="mt-12 md:mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-12 md:gap-16"
           >
             {[
               { value: 2400, prefix: "$", suffix: "B+", label: "Market Cap Tracked" },
@@ -296,7 +296,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
           className="absolute bottom-0 left-0 right-0"
         >
           <MarketTape />
@@ -371,7 +371,7 @@ export default function Home() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
                 </div>
-                <span className="ml-3 text-xs text-text-muted font-mono hidden sm:block">tyche — dashboard</span>
+                <span className="ml-3 text-xs text-text-muted font-mono hidden sm:block">erns — dashboard</span>
               </div>
 
               <div className="p-5 sm:p-8 md:p-10">

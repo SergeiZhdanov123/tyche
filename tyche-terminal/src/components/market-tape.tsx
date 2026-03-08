@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { config } from "@/lib/config";
 
 // Stock data type
 interface StockTicker {
@@ -11,24 +12,27 @@ interface StockTicker {
     changePercent: number;
 }
 
-// Mock stock data - in production this would come from a real API
-const mockStocks: StockTicker[] = [
-    { symbol: "AAPL", price: 178.72, change: 2.34, changePercent: 1.33 },
-    { symbol: "NVDA", price: 721.28, change: 15.67, changePercent: 2.22 },
-    { symbol: "TSLA", price: 248.50, change: -4.23, changePercent: -1.67 },
-    { symbol: "MSFT", price: 415.32, change: 3.21, changePercent: 0.78 },
-    { symbol: "GOOGL", price: 141.80, change: 1.45, changePercent: 1.03 },
-    { symbol: "AMZN", price: 178.25, change: 2.89, changePercent: 1.65 },
-    { symbol: "META", price: 485.39, change: -2.11, changePercent: -0.43 },
-    { symbol: "AMD", price: 164.72, change: 4.56, changePercent: 2.85 },
-    { symbol: "NFLX", price: 628.90, change: 8.34, changePercent: 1.34 },
-    { symbol: "JPM", price: 198.45, change: -1.23, changePercent: -0.62 },
-    { symbol: "V", price: 278.90, change: 1.87, changePercent: 0.67 },
-    { symbol: "WMT", price: 165.23, change: 0.45, changePercent: 0.27 },
+// Fallback data while real quotes load
+const fallbackStocks: StockTicker[] = [
+    { symbol: "AAPL", price: 0, change: 0, changePercent: 0 },
+    { symbol: "NVDA", price: 0, change: 0, changePercent: 0 },
+    { symbol: "TSLA", price: 0, change: 0, changePercent: 0 },
+    { symbol: "MSFT", price: 0, change: 0, changePercent: 0 },
+    { symbol: "GOOGL", price: 0, change: 0, changePercent: 0 },
+    { symbol: "AMZN", price: 0, change: 0, changePercent: 0 },
+    { symbol: "META", price: 0, change: 0, changePercent: 0 },
+    { symbol: "AMD", price: 0, change: 0, changePercent: 0 },
+    { symbol: "NFLX", price: 0, change: 0, changePercent: 0 },
+    { symbol: "JPM", price: 0, change: 0, changePercent: 0 },
+    { symbol: "V", price: 0, change: 0, changePercent: 0 },
+    { symbol: "WMT", price: 0, change: 0, changePercent: 0 },
 ];
+
+const TICKER_SYMBOLS = fallbackStocks.map(s => s.symbol).join(",");
 
 function TickerItem({ stock }: { stock: StockTicker }) {
     const isPositive = stock.change >= 0;
+    const loaded = stock.price > 0;
 
     return (
         <div className="flex items-center gap-3 px-6 whitespace-nowrap">
@@ -36,60 +40,75 @@ function TickerItem({ stock }: { stock: StockTicker }) {
                 {stock.symbol}
             </span>
             <span className="font-mono text-text-muted text-sm">
-                ${stock.price.toFixed(2)}
+                {loaded ? `$${stock.price.toFixed(2)}` : "—"}
             </span>
-            <span
-                className={`font-mono text-sm font-medium ${isPositive ? "text-profit" : "text-loss"
-                    }`}
-            >
-                {isPositive ? "+" : ""}
-                {stock.change.toFixed(2)} ({isPositive ? "+" : ""}
-                {stock.changePercent.toFixed(2)}%)
-            </span>
-            {/* Trend indicator */}
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className={`w-4 h-4 ${isPositive ? "text-profit" : "text-loss rotate-180"}`}
-            >
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.5 15.75l7.5-7.5 7.5 7.5"
-                />
-            </svg>
+            {loaded && (
+                <>
+                    <span
+                        className={`font-mono text-sm font-medium ${isPositive ? "text-profit" : "text-loss"
+                            }`}
+                    >
+                        {isPositive ? "+" : ""}
+                        {stock.change.toFixed(2)} ({isPositive ? "+" : ""}
+                        {stock.changePercent.toFixed(2)}%)
+                    </span>
+                    {/* Trend indicator */}
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className={`w-4 h-4 ${isPositive ? "text-profit" : "text-loss rotate-180"}`}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.5 15.75l7.5-7.5 7.5 7.5"
+                        />
+                    </svg>
+                </>
+            )}
         </div>
     );
 }
 
 export function MarketTape() {
-    const [stocks, setStocks] = useState<StockTicker[]>(mockStocks);
+    const [stocks, setStocks] = useState<StockTicker[]>(fallbackStocks);
 
-    // Simulate real-time updates
     useEffect(() => {
-        const interval = setInterval(() => {
-            setStocks((prevStocks) =>
-                prevStocks.map((stock) => {
-                    // Random price fluctuation between -0.5% and +0.5%
-                    const fluctuation = (Math.random() - 0.5) * 0.01;
-                    const newPrice = stock.price * (1 + fluctuation);
-                    const newChange = newPrice - (stock.price - stock.change);
-                    const newChangePercent = (newChange / (newPrice - newChange)) * 100;
+        let mounted = true;
 
-                    return {
-                        ...stock,
-                        price: newPrice,
-                        change: newChange,
-                        changePercent: newChangePercent,
-                    };
-                })
-            );
-        }, 3000);
+        async function fetchQuotes() {
+            try {
+                const res = await fetch(`${config.apiUrl}/market/quotes?tickers=${TICKER_SYMBOLS}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!mounted || !data.quotes) return;
 
-        return () => clearInterval(interval);
+                // Map API response to our StockTicker format
+                const updated: StockTicker[] = data.quotes.map((q: {
+                    ticker: string;
+                    price: number;
+                    change: number;
+                    change_pct: number;
+                }) => ({
+                    symbol: q.ticker,
+                    price: q.price || 0,
+                    change: q.change || 0,
+                    changePercent: q.change_pct || 0,
+                }));
+                if (updated.length > 0) setStocks(updated);
+            } catch {
+                // Keep fallback data on error
+            }
+        }
+
+        // Fetch immediately
+        fetchQuotes();
+        // Refresh every 60 seconds
+        const interval = setInterval(fetchQuotes, 60000);
+        return () => { mounted = false; clearInterval(interval); };
     }, []);
 
     // Double the stocks array for seamless infinite scroll

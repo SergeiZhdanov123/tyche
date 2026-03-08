@@ -171,7 +171,7 @@ def tier_rpm(tier: str) -> int:
         return RATE_PREMIUM_RPM
     if tier == "starter":
         return RATE_STARTER_RPM
-    return 10
+    return 60  # anonymous: 60 rpm (dashboard fires ~8 requests per page load)
 
 
 from auth_keys import hash_api_key as _hash_api_key
@@ -241,12 +241,16 @@ async def get_identity(request: Request) -> ApiIdentity:
     )
 
 
-def enforce_rate(identity: ApiIdentity) -> None:
+def enforce_rate(identity: ApiIdentity, client_ip: str = "") -> None:
     """
-    Enforce rate limits per API key per minute.
+    Enforce rate limits per API key (or per-IP for anonymous) per minute.
     """
     minute = int(time.time() // 60)
-    key = f"{identity.api_key or 'anon'}:{minute}"
+    # Per-IP tracking for anonymous users so different visitors don't exhaust each other
+    if identity.api_key:
+        key = f"{identity.api_key}:{minute}"
+    else:
+        key = f"{client_ip}:anon:{minute}"
     used = rate_cache.get(key, 0)
     if used >= identity.rpm_limit:
         raise HTTPException(
@@ -1013,7 +1017,7 @@ async def auth_and_rate_middleware(request: Request, call_next):
         return response
 
     try:
-        enforce_rate(identity)
+        enforce_rate(identity, client_ip)
         request.state.identity = identity
         response = await call_next(request)
         for k, v in cors_headers.items():
@@ -1623,7 +1627,7 @@ from html import unescape as html_unescape
 
 # In-memory news cache: key -> (timestamp, data)
 _news_cache: Dict[str, Tuple[float, Any]] = {}
-NEWS_CACHE_TTL = 300  # 5 minutes
+NEWS_CACHE_TTL = 600  # 10 minutes (was 5)
 
 
 class ScrapedArticle(BaseModel):
@@ -1709,29 +1713,60 @@ def _extract_source_from_url(url: str) -> str:
 
 
 async def _fetch_article_image(url: str) -> Optional[str]:
-    """Fetch og:image from an article URL (fast, with timeout)."""
+    """Fetch og:image from an article URL (fallback only — used when RSS has no media)."""
+    if not url:
+        return None
+    # Skip Google News redirect URLs — they block scrapers
+    if "news.google.com" in url:
+        return None
     try:
-        async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
             r = await client.get(url, headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
             })
             if r.status_code != 200:
                 return None
-            # Only parse partial HTML for speed
-            html_text = r.text[:20000]
+            html_text = r.text[:15000]
             from bs4 import BeautifulSoup
             soup = BeautifulSoup(html_text, "lxml")
-            # Try og:image first
             og = soup.find("meta", property="og:image")
             if og and og.get("content"):
                 return og["content"]
-            # Try twitter:image
             tw = soup.find("meta", attrs={"name": "twitter:image"})
             if tw and tw.get("content"):
                 return tw["content"]
             return None
     except Exception:
         return None
+
+
+def _extract_rss_image(entry) -> Optional[str]:
+    """Extract image URL from RSS feed entry's media fields (no HTTP needed)."""
+    # media_content (standard RSS media namespace)
+    if hasattr(entry, "media_content") and entry.media_content:
+        for mc in entry.media_content:
+            url = mc.get("url", "")
+            if url and ("image" in mc.get("medium", "image") or "image" in mc.get("type", "image")):
+                return url
+        # If no medium/type info, just take first one with a URL
+        if entry.media_content[0].get("url"):
+            return entry.media_content[0]["url"]
+    # media_thumbnail
+    if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
+        for mt in entry.media_thumbnail:
+            if mt.get("url"):
+                return mt["url"]
+    # enclosures (some feeds use this)
+    if hasattr(entry, "enclosures") and entry.enclosures:
+        for enc in entry.enclosures:
+            if "image" in enc.get("type", "") and enc.get("href"):
+                return enc["href"]
+    # links with image type
+    if hasattr(entry, "links"):
+        for link in entry.links:
+            if "image" in link.get("type", "") and link.get("href"):
+                return link["href"]
+    return None
 
 
 async def _scrape_google_news_rss(query: str, limit: int = 20) -> List[ScrapedArticle]:
@@ -1758,8 +1793,8 @@ async def _scrape_google_news_rss(query: str, limit: int = 20) -> List[ScrapedAr
 
             feed = feedparser.parse(r.text)
 
-            # Collect articles from RSS
-            image_tasks = []
+            # Collect image-fetch tasks only for entries without RSS media
+            fallback_image_tasks = []  # (index, coroutine)
             raw_articles = []
 
             for entry in feed.entries[:limit]:
@@ -1768,49 +1803,48 @@ async def _scrape_google_news_rss(query: str, limit: int = 20) -> List[ScrapedAr
                 desc = _clean_html(entry.get("description", "") or entry.get("summary", ""))
                 pub_date = entry.get("published", "")
 
-                # Parse published date
                 if pub_date and hasattr(entry, "published_parsed") and entry.published_parsed:
                     import calendar
                     pub_ts = calendar.timegm(entry.published_parsed)
                     pub_date = dt.datetime.utcfromtimestamp(pub_ts).isoformat() + "Z"
 
                 source = _extract_source_from_url(link) if link else "Google News"
-                # Sometimes Google News wraps source in the title as "Title - Source"
                 if " - " in title:
                     parts = title.rsplit(" - ", 1)
-                    if len(parts[1]) < 40:  # Source names are short
+                    if len(parts[1]) < 40:
                         source = parts[1]
                         title = parts[0]
 
                 sentiment = _detect_sentiment(title + " " + desc)
 
+                # Try to get image from RSS media fields first (fast, no HTTP)
+                rss_image = _extract_rss_image(entry)
+
+                idx = len(raw_articles)
                 raw_articles.append({
                     "source": source,
                     "title": title,
                     "description": desc[:300] if desc else None,
                     "url": link,
+                    "image_url": rss_image,
                     "published_at": pub_date,
                     "sentiment_hint": sentiment,
                 })
-                image_tasks.append(_fetch_article_image(link))
 
-            # Fetch images in parallel (fast)
-            if image_tasks:
-                images = await asyncio.gather(*image_tasks, return_exceptions=True)
-            else:
-                images = []
+                # Only fetch og:image for entries that don't have RSS media
+                if not rss_image and link and "news.google.com" not in link:
+                    fallback_image_tasks.append((idx, _fetch_article_image(link)))
 
-            for i, raw in enumerate(raw_articles):
-                img = images[i] if i < len(images) and not isinstance(images[i], Exception) else None
-                articles.append(ScrapedArticle(
-                    source=raw["source"],
-                    title=raw["title"],
-                    description=raw["description"],
-                    url=raw["url"],
-                    image_url=img,
-                    published_at=raw["published_at"],
-                    sentiment_hint=raw["sentiment_hint"],
-                ))
+            # Fetch fallback images in parallel (only for entries without RSS media)
+            if fallback_image_tasks:
+                indices, coros = zip(*fallback_image_tasks)
+                images = await asyncio.gather(*coros, return_exceptions=True)
+                for i, img in zip(indices, images):
+                    if isinstance(img, str) and img:
+                        raw_articles[i]["image_url"] = img
+
+            for raw in raw_articles:
+                articles.append(ScrapedArticle(**raw))
 
     except Exception as e:
         print(f"[News Scraper] Error scraping Google News: {e}")
@@ -1824,7 +1858,8 @@ async def _scrape_yahoo_finance_rss(ticker: str = "", limit: int = 20) -> List[S
     if ticker:
         rss_url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker.upper()}&region=US&lang=en-US"
     else:
-        rss_url = "https://finance.yahoo.com/news/rssindex"
+        # Use the working Yahoo Finance RSS URL
+        rss_url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US"
 
     cache_key = f"yfin:{ticker}:{limit}"
     now = time.time()
@@ -1845,7 +1880,7 @@ async def _scrape_yahoo_finance_rss(ticker: str = "", limit: int = 20) -> List[S
 
             feed = feedparser.parse(r.text)
 
-            image_tasks = []
+            fallback_image_tasks = []
             raw_articles = []
 
             for entry in feed.entries[:limit]:
@@ -1862,32 +1897,33 @@ async def _scrape_yahoo_finance_rss(ticker: str = "", limit: int = 20) -> List[S
                 source = _extract_source_from_url(link) if link else "Yahoo Finance"
                 sentiment = _detect_sentiment(title + " " + desc)
 
+                # Try RSS media fields first (fast, no HTTP)
+                rss_image = _extract_rss_image(entry)
+
+                idx = len(raw_articles)
                 raw_articles.append({
                     "source": source,
                     "title": title,
                     "description": desc[:300] if desc else None,
                     "url": link,
+                    "image_url": rss_image,
                     "published_at": pub_date,
                     "sentiment_hint": sentiment,
                 })
-                image_tasks.append(_fetch_article_image(link))
 
-            if image_tasks:
-                images = await asyncio.gather(*image_tasks, return_exceptions=True)
-            else:
-                images = []
+                # Only fetch og:image for entries that don't have RSS media
+                if not rss_image and link:
+                    fallback_image_tasks.append((idx, _fetch_article_image(link)))
 
-            for i, raw in enumerate(raw_articles):
-                img = images[i] if i < len(images) and not isinstance(images[i], Exception) else None
-                articles.append(ScrapedArticle(
-                    source=raw["source"],
-                    title=raw["title"],
-                    description=raw["description"],
-                    url=raw["url"],
-                    image_url=img,
-                    published_at=raw["published_at"],
-                    sentiment_hint=raw["sentiment_hint"],
-                ))
+            if fallback_image_tasks:
+                indices, coros = zip(*fallback_image_tasks)
+                images = await asyncio.gather(*coros, return_exceptions=True)
+                for i, img in zip(indices, images):
+                    if isinstance(img, str) and img:
+                        raw_articles[i]["image_url"] = img
+
+            for raw in raw_articles:
+                articles.append(ScrapedArticle(**raw))
 
     except Exception as e:
         print(f"[News Scraper] Error scraping Yahoo Finance: {e}")
