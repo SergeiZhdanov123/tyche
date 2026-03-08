@@ -3805,6 +3805,83 @@ async def _fetch_quotes_concurrent(tickers: List[str]) -> List[dict]:
 
 
 # ------------------------------------------------------------------
+# LIVE EARNINGS MONITOR
+# ------------------------------------------------------------------
+
+from ir_scraper import check_earnings_live, LiveEarningsResult
+
+
+class LiveMonitorResponse(BaseModel):
+    ticker: str
+    status: str  # "waiting" | "dropped" | "error"
+    company_name: str = ""
+    ir_url: str = ""
+    last_checked: str = ""
+    expected_date: Optional[str] = None
+    expected_time: Optional[str] = None
+    dropped_at: Optional[str] = None
+    headline: Optional[str] = None
+    source_url: Optional[str] = None
+    eps_actual: Optional[str] = None
+    eps_estimate: Optional[str] = None
+    revenue_actual: Optional[str] = None
+    revenue_estimate: Optional[str] = None
+    eps_surprise_pct: Optional[float] = None
+    revenue_surprise_pct: Optional[float] = None
+    beat_eps: Optional[bool] = None
+    beat_revenue: Optional[bool] = None
+    guidance: Optional[str] = None
+    error_message: Optional[str] = None
+
+
+@app.get("/earnings/live-monitor", response_model=LiveMonitorResponse, tags=["Earnings Intelligence"])
+async def earnings_live_monitor(
+    ticker: str = Query(..., description="Stock ticker to monitor"),
+):
+    """
+    Live earnings monitor — checks IR pages and SEC filings for real-time earnings drops.
+    Poll this endpoint every few seconds to detect when a company releases earnings.
+    Returns status: 'waiting' (not yet), 'dropped' (earnings detected), or 'error'.
+    Pro/Enterprise feature.
+    """
+    ticker = ticker.upper().strip()
+    if not ticker or len(ticker) > 10:
+        raise HTTPException(status_code=400, detail="Invalid ticker")
+
+    try:
+        result = await check_earnings_live(ticker)
+        return LiveMonitorResponse(
+            ticker=result.ticker,
+            status=result.status,
+            company_name=result.company_name,
+            ir_url=result.ir_url,
+            last_checked=result.last_checked,
+            expected_date=result.expected_date,
+            expected_time=result.expected_time,
+            dropped_at=result.dropped_at,
+            headline=result.headline,
+            source_url=result.source_url,
+            eps_actual=result.eps_actual,
+            eps_estimate=result.eps_estimate,
+            revenue_actual=result.revenue_actual,
+            revenue_estimate=result.revenue_estimate,
+            eps_surprise_pct=result.eps_surprise_pct,
+            revenue_surprise_pct=result.revenue_surprise_pct,
+            beat_eps=result.beat_eps,
+            beat_revenue=result.beat_revenue,
+            guidance=result.guidance,
+            error_message=result.error_message,
+        )
+    except Exception as e:
+        return LiveMonitorResponse(
+            ticker=ticker,
+            status="error",
+            last_checked=dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            error_message=str(e)[:200],
+        )
+
+
+# ------------------------------------------------------------------
 # SURPRISES endpoint
 # ------------------------------------------------------------------
 

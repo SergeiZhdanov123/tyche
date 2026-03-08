@@ -1,0 +1,253 @@
+================================================================================
+                              WHAT IS ERNS?
+================================================================================
+
+Erns is a professional-grade earnings intelligence platform built for traders, 
+investors, and analysts who need fast, accurate, and actionable financial data. 
+It transforms the way users interact with earnings season by combining real-time 
+data scraping, AI-powered analysis, and a sleek terminal-style interface into one 
+powerful tool.
+
+At its core, Erns aggregates earnings data from multiple sources — Yahoo Finance, 
+Nasdaq, SEC filings, and more — and presents it through an intuitive dashboard 
+that makes complex financial data instantly digestible. Whether you're tracking 
+upcoming earnings dates, analyzing post-earnings price reactions, or screening 
+for stocks that beat or missed EPS estimates, Erns puts all that information at 
+your fingertips.
+
+KEY FEATURES:
+
+• Earnings Screener — Filter upcoming earnings by date, ticker, BMO/AMC timing, 
+  EPS estimates, revenue forecasts, and market cap. Find the plays before the 
+  market moves.
+
+• Earnings Surprises — Instantly see which companies beat or missed analyst 
+  expectations, with surprise percentages, actual vs. estimated EPS, and 
+  historical patterns.
+
+• AI-Powered Signals — AI analyzes your watchlist and generates bullish, bearish, 
+  or neutral trading signals with confidence scores, key technical levels, 
+  catalysts, and risk assessments.
+
+• Deep Analysis — Click any signal for an AI-generated deep dive: current 
+  positioning, recent earnings breakdown, technical setup, upcoming catalysts, 
+  risk factors, and specific trade setups with entry/exit levels.
+
+• Erns Chat — An intelligent AI assistant specialized in earnings, SEC filings, 
+  financial health, and market reactions. Ask it anything about a company's 
+  fundamentals and get data-driven answers.
+
+• Sentiment Analysis — AI-driven sentiment scoring on SEC filings (10-Q, 10-K, 
+  8-K), determining whether a company's language signals bullish, bearish, or 
+  neutral outlook.
+
+• Interactive Charts — Candlestick and line charts with multiple timeframes (1D, 
+  1W, 1M, 3M, 6M, 1Y) and granularity controls (1min, 5min, 1H, 1D, 1W).
+
+• Live News Feed — Real-time financial news aggregated from Reuters, CNBC, 
+  Bloomberg, Yahoo Finance, and more, with sentiment tagging on every headline.
+
+• Watchlist Sync — Build and manage your watchlist, synced across all features. 
+  Your signals, screener, and dashboard adapt to the tickers you care about.
+
+• Public API — Full REST API with documentation and an interactive playground. 
+  Developers and quants can integrate Erns data directly into their own tools, 
+  bots, and trading systems.
+
+• Terminal Aesthetic — A dark, premium interface inspired by Bloomberg Terminal 
+  and trading desks. Designed for speed, information density, and zero 
+  distractions.
+
+Erns is built for people who take earnings seriously. It's not a toy — it's a 
+weapon for earnings season.
+
+Website: tychefinancials.com
+
+
+================================================================================
+                    AI VIDEO PROMPTS — 18:9 MARKETING VIDEOS
+================================================================================
+
+Each prompt below is designed for AI video generation tools (Runway, Sora, Pika, 
+Kling, etc.) in 18:9 widescreen aspect ratio. These are cinematic, high-end 
+marketing videos for Erns.
+
+--------------------------------------------------------------------------------
+PROMPT 1 — "THE TERMINAL AWAKENS"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A dark room lit only by monitor glow. Camera slowly 
+pushes in on a sleek ultrawide monitor displaying a financial terminal interface 
+with dark theme — green and cyan data streams, candlestick charts drawing 
+themselves in real-time, numbers ticking. The screen reflects on a polished black 
+desk surface. Subtle particle effects float in the air like digital dust. The 
+atmosphere is moody, premium, and futuristic. No text overlay. Film grain. 
+Shallow depth of field. Anamorphic lens flare from the monitor edges. 4K quality.
+
+--------------------------------------------------------------------------------
+PROMPT 2 — "DATA CASCADE"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Abstract visualization of financial data flowing 
+downward like a waterfall in a dark void. Glowing green and electric blue numbers, 
+ticker symbols (AAPL, NVDA, TSLA, MSFT), and percentage changes cascade from top 
+to bottom in 3D space. Camera slowly rotates around the data stream. The numbers 
+transition from chaos into organized rows — as if raw data is being structured 
+into intelligence. Dark background with subtle grid lines. Volumetric lighting. 
+Cinematic color grading with deep blacks and neon accents. No people. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 3 — "EARNINGS BELL"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Close-up of a stock exchange bell being struck in slow 
+motion. As the bell rings, shockwaves ripple outward and transform into streams 
+of financial data — EPS numbers, revenue figures, "BEAT" and "MISS" tags flying 
+through the air. Camera pulls back to reveal a massive digital wall of earnings 
+results, each tile lighting up green (beat) or red (miss) like a scoreboard. 
+Dramatic orchestral energy. Golden hour lighting mixed with digital cyan glow. 
+Depth of field. Lens flare. Premium cinematic feel. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 4 — "THE TRADER'S DESK"  
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Overhead bird's-eye view slowly descending onto a 
+professional trading desk setup. Three monitors showing dark-themed financial 
+dashboards with candlestick charts, earnings calendars, and news feeds. A hand 
+reaches for a wireless mouse and clicks — the screens react with smooth 
+animations, charts updating, signals appearing. Coffee cup with steam rising sits 
+beside the keyboard. Early morning blue light coming through floor-to-ceiling 
+windows of a high-rise. City skyline blurred in the background. Photorealistic. 
+Shallow depth of field. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 5 — "SIGNAL PULSE"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A single glowing pulse of light — electric green — 
+travels along a circuit board-like path in a dark 3D environment. As it moves, it 
+branches into multiple paths, each branch lighting up with labels: "BULLISH", 
+"BEARISH", "NEUTRAL". The paths converge into a central hub that pulses with 
+energy and displays a confidence percentage climbing from 0% to 87%. The entire 
+scene has a futuristic neural-network aesthetic. Dark background, neon green and 
+cyan accents. Volumetric fog. Camera follows the light pulse in a smooth tracking 
+shot. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 6 — "WALL STREET RAIN"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Rain falling on Wall Street at night. Camera tilts up 
+from wet pavement reflecting neon lights to reveal the New York Stock Exchange 
+building. Holographic stock tickers and earnings data float in the air above the 
+street like augmented reality overlays — ticker symbols, EPS numbers, green/red 
+arrows. People walk past with umbrellas, oblivious to the data floating around 
+them. Cyberpunk-meets-finance aesthetic. Moody blue and amber lighting. 
+Anamorphic lens. Rain droplets on the camera lens. Slow motion. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 7 — "SPEED OF INFORMATION"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Ultra-fast abstract sequence. Camera flies through a 
+tunnel made of financial data — stock tickers, candlestick charts, earnings 
+reports, SEC filing documents — all rendered as translucent panels in 3D space. 
+The speed increases gradually until the data blurs into light streaks. Then 
+suddenly stops — revealing a single clean dashboard screen displaying organized 
+earnings intelligence. The chaos becomes clarity. The message: raw data becomes 
+insight. Dark background throughout. Electric blue to warm gold color transition. 
+Motion blur. Cinematic. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 8 — "AFTER HOURS"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A modern apartment at night, floor-to-ceiling windows 
+showing a city skyline. A single laptop open on a minimalist desk, screen glowing 
+with a dark financial dashboard. Camera slowly orbits around the laptop. On 
+screen, earnings surprise data populates — green checkmarks appearing one by one. 
+A notification appears: "3 new signals detected." The ambient room lighting 
+subtly shifts from cool blue to warm green, reflecting the bullish data. Calm, 
+sophisticated atmosphere. Lo-fi energy. Photorealistic. Shallow depth of field. 
+Reflections on the glass windows. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 9 — "THE COUNTDOWN"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A large digital countdown clock (07:29:59... 
+07:29:58...) ticking down to market open. The clock is displayed on a massive 
+screen in a futuristic trading floor environment. As the countdown progresses, 
+screens around the room begin lighting up with pre-market data — futures numbers, 
+earnings calendars, BMO (Before Market Open) earnings results appearing. The 
+energy builds. Camera moves through the space dynamically. Red and blue LED 
+ambient lighting. Reflective floors. The atmosphere is tense, electric, and 
+anticipatory. No people visible. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 10 — "INTELLIGENCE GRID"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Top-down view of a massive holographic grid floating 
+in dark space. Each cell in the grid represents a stock — showing a mini 
+candlestick chart, ticker symbol, and sentiment indicator (green dot, red dot, 
+yellow dot). Camera slowly pulls out to reveal hundreds of these cells forming a 
+beautiful mosaic of market intelligence. Some cells pulse brighter than others — 
+these are the ones with upcoming earnings. A gentle rotation reveals the grid is 
+three-dimensional, with layers of data stacked beneath. Futuristic, clean, and 
+mesmerizing. Teal and gold color palette. Volumetric lighting. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 11 — "BEAT THE STREET"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Dramatic slow-motion sequence: a green arrow punches 
+upward through a translucent floor made of analyst estimate numbers. As it breaks 
+through, the numbers shatter like glass and reform above as "BEAT +12.5%". 
+Camera follows the arrow upward through layers of data — revenue estimates, EPS 
+forecasts, guidance numbers — each layer breaking as the arrow passes through. 
+The final shot reveals a clean earnings summary card floating in space. Powerful, 
+triumphant energy. Gold and green color palette. Particle effects from the 
+shattering numbers. Epic cinematic feel. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 12 — "NIGHTSHIFT ALPHA"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Time-lapse of a city transitioning from day to night 
+seen through the window of a high-rise office. In the foreground, a monitor 
+displays an earnings intelligence dashboard that updates in real-time as the 
+hours pass. As night falls, the dashboard becomes the brightest element in frame. 
+After-hours earnings results start populating on screen. The city lights below 
+mirror the data dots on the dashboard above. Reflections of the screen data 
+appear on the window glass, merging the digital and physical worlds. Elegant, 
+contemplative mood. Warm amber to cool blue color transition. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 13 — "ONE CLICK DEEP"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. Extreme macro close-up of a finger hovering over a 
+sleek mouse button. The finger clicks in slow motion. Camera follows the "click" 
+as a pulse of light that travels from the mouse through a cable (or wirelessly 
+through the air as a light beam) into a monitor. On the monitor, the click 
+triggers a deep analysis panel that unfolds — sections appearing one by one: 
+Technical Setup, Earnings Breakdown, Risk Assessment, Trade Setup. Each section 
+fills with data in a satisfying cascade animation. The message: one click unlocks 
+deep intelligence. Dark premium aesthetic. Cyan accent lighting. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 14 — "MARKET HEARTBEAT"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A stylized heartbeat monitor line (like an EKG) 
+pulses across the screen in electric green against pure black. With each pulse, 
+the line morphs — it becomes a stock price line chart, then a candlestick 
+pattern, then earnings bar charts, then back to a heartbeat. The rhythm is steady 
+and hypnotic. Camera slowly zooms out to reveal the line is displayed on the 
+screen of the Erns platform, with the full dashboard visible around it. The 
+heartbeat represents the pulse of the market. Minimal, elegant, powerful. Green 
+on black. Subtle glow effects. 4K.
+
+--------------------------------------------------------------------------------
+PROMPT 15 — "UNLOCK EARNINGS SEASON"
+--------------------------------------------------------------------------------
+Cinematic 18:9 widescreen. A massive vault door — industrial, metallic, 
+impressive — slowly swings open. Behind it, instead of gold, there's a wall of 
+illuminated financial data: earnings dates, EPS estimates, revenue forecasts, AI 
+signals, all floating in organized rows. Golden light spills from the vault into 
+a dark corridor. Camera pushes through the door into the data. As we enter, the 
+data reorganizes itself into a clean dashboard layout. The metaphor: Erns unlocks 
+the value hidden in earnings data. Dramatic lighting. Volumetric god rays from 
+the vault opening. Film grain. Deep blacks. 4K.
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================

@@ -107,6 +107,13 @@ const sidebarItems = [
     { icon: Icons.Chart, label: "Chart", href: "/chart" },
     { icon: Icons.Calendar, label: "Earnings", href: "/earnings" },
     { icon: Icons.Signals, label: "Signals", href: "/signals" },
+    {
+        icon: () => (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
+        ), label: "Live Earnings", href: "/live-earnings", badge: "PRO"
+    },
     { icon: Icons.Watchlist, label: "Watchlist", href: "/watchlist" },
     {
         icon: () => (
@@ -320,6 +327,7 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
                     {sidebarItems.map((item) => {
                         const href = (item as any).href;
                         const Icon = (item as any).icon;
+                        const badge = (item as any).badge;
                         const isActive = pathname === href;
                         return (
                             <Link
@@ -337,9 +345,14 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
                                             initial={{ opacity: 0, width: 0 }}
                                             animate={{ opacity: 1, width: "auto" }}
                                             exit={{ opacity: 0, width: 0 }}
-                                            className="text-sm font-medium overflow-hidden whitespace-nowrap"
+                                            className="text-sm font-medium overflow-hidden whitespace-nowrap flex items-center gap-2"
                                         >
                                             {item.label}
+                                            {badge && (
+                                                <span className="text-[8px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-full leading-none">
+                                                    {badge}
+                                                </span>
+                                            )}
                                         </motion.span>
                                     )}
                                 </AnimatePresence>
