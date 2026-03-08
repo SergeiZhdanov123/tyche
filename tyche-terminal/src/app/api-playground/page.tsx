@@ -387,13 +387,11 @@ export default function ApiPlaygroundPage() {
 
     return (
         <DashboardLayout title="API Playground">
-            <div className="relative flex h-full">
+            <div className="relative flex flex-col h-full">
                 {/* ─── Starter Request Limit Banner ─── */}
                 {!subLoading && isStarter && (
-                    <div className="absolute top-0 left-0 right-0 z-40 p-3 bg-gradient-to-r from-amber-500/10 to-cyan-500/10 border-b border-amber-500/20 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-amber-400 text-xs font-semibold">Starter Plan — {Math.max(0, 5 - starterRequestCount)}/5 free requests remaining</span>
-                        </div>
+                    <div className="shrink-0 p-3 bg-gradient-to-r from-amber-500/10 to-cyan-500/10 border border-amber-500/20 rounded-xl mb-4 flex items-center justify-between">
+                        <span className="text-amber-400 text-xs font-semibold">Starter Plan — {Math.max(0, 5 - starterRequestCount)}/5 free requests remaining</span>
                         <Link
                             href="/select-plan"
                             className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-primary text-white rounded-lg text-[10px] font-bold hover:opacity-90 transition-opacity"
@@ -402,191 +400,193 @@ export default function ApiPlaygroundPage() {
                         </Link>
                     </div>
                 )}
-                {/* ─── Endpoint Browser ─── */}
-                <aside className="w-72 border-r border-border bg-surface/50 overflow-y-auto shrink-0 hidden lg:flex flex-col">
-                    <div className="p-4 border-b border-border">
-                        <h2 className="text-base font-bold text-text-main">API Playground</h2>
-                        <p className="text-[10px] text-text-muted mt-1">Select an endpoint to test</p>
-                    </div>
-                    <nav className="flex-1 overflow-y-auto p-2">
-                        {ENDPOINTS.map((cat, catIdx) => (
-                            <div key={cat.category} className="mb-3">
-                                <div className="px-3 py-1.5 text-xs font-semibold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>{cat.icon}</span>
-                                    {cat.category}
-                                </div>
-                                {cat.endpoints.map((ep, epIdx) => {
-                                    const active = catIdx === selectedCategory && epIdx === selectedEndpoint;
-                                    return (
-                                        <button
-                                            key={ep.path}
-                                            onClick={() => selectEndpoint(catIdx, epIdx)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-xs mb-0.5 transition-all flex items-center gap-2 ${active
-                                                ? "bg-primary/10 border border-primary/20 text-text-main"
-                                                : "text-text-muted hover:text-text-main hover:bg-white/5 border border-transparent"
-                                                }`}
-                                        >
-                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${methodColor(ep.method)}`}>
-                                                {ep.method}
-                                            </span>
-                                            <span className="font-mono truncate text-[11px]">
-                                                {ep.path.replace("/company/{ticker}/", "").replace("/market/", "").replace("/calendar/", "")}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </nav>
-                </aside>
-
-                {/* ─── Main Panel ─── */}
-                <main className="flex-1 overflow-y-auto flex flex-col">
-                    {/* Endpoint Header */}
-                    <div className="p-5 lg:p-6 border-b border-border bg-surface/30">
-                        {/* Mobile selector */}
-                        <div className="lg:hidden mb-4">
-                            <select
-                                value={`${selectedCategory}-${selectedEndpoint}`}
-                                onChange={(e) => {
-                                    const [c, ep] = e.target.value.split("-").map(Number);
-                                    selectEndpoint(c, ep);
-                                }}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-main font-mono"
-                            >
-                                {ENDPOINTS.map((cat, ci) =>
-                                    cat.endpoints.map((ep, ei) => (
-                                        <option key={`${ci}-${ei}`} value={`${ci}-${ei}`}>
-                                            {cat.icon} {ep.method} {ep.path}
-                                        </option>
-                                    ))
-                                )}
-                            </select>
+                <div className="flex flex-1 min-h-0">
+                    {/* ─── Endpoint Browser ─── */}
+                    <aside className="w-72 border-r border-border bg-surface/50 overflow-y-auto shrink-0 hidden lg:flex flex-col">
+                        <div className="p-4 border-b border-border">
+                            <h2 className="text-base font-bold text-text-main">API Playground</h2>
+                            <p className="text-[10px] text-text-muted mt-1">Select an endpoint to test</p>
                         </div>
-
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className={`text-xs font-bold px-2 py-1 rounded border ${methodColor(endpoint.method)}`}>
-                                {endpoint.method}
-                            </span>
-                            <code className="text-base font-mono text-text-main">{endpoint.path}</code>
-                        </div>
-                        <p className="text-sm text-text-muted">{endpoint.description}</p>
-                    </div>
-
-                    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-                        {/* ─── Parameters Panel ─── */}
-                        <div className="lg:w-[400px] border-b lg:border-b-0 lg:border-r border-border p-5 overflow-y-auto">
-                            <h3 className="text-xs font-semibold text-text-main uppercase tracking-wider mb-4">Parameters</h3>
-
-                            {endpoint.params.length === 0 ? (
-                                <p className="text-xs text-text-muted italic">No parameters required</p>
-                            ) : (
-                                <div className="space-y-4">
-                                    {endpoint.params.map((p) => (
-                                        <div key={p.name}>
-                                            <label className="flex items-center gap-2 mb-1.5">
-                                                <span className="text-xs font-mono text-text-main">{p.name}</span>
-                                                {p.required && <span className="text-[9px] text-red-400 font-bold">REQUIRED</span>}
-                                                <span className="text-[9px] text-text-muted/50 ml-auto">{p.type}</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={paramValues[p.name] || ""}
-                                                onChange={(e) => setParamValues({ ...paramValues, [p.name]: e.target.value })}
-                                                placeholder={p.placeholder || p.default || p.description}
-                                                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono text-text-main placeholder-text-muted/40 focus:border-primary/50 outline-none transition-colors"
-                                            />
-                                            <p className="text-[10px] text-text-muted mt-1">{p.description}{p.default ? ` (default: ${p.default})` : ""}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Execute Button */}
-                            <button
-                                onClick={executeRequest}
-                                disabled={loading || (isStarter && starterRequestCount >= 5)}
-                                className="w-full mt-6 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="60" strokeDashoffset="20" />
-                                        </svg>
-                                        Sending...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        Send Request
-                                    </>
-                                )}
-                            </button>
-
-                            {/* URL Preview */}
-                            <div className="mt-4">
-                                <h4 className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">Request URL</h4>
-                                <pre className="bg-background rounded-lg px-3 py-2 text-[10px] font-mono text-primary/70 overflow-x-auto whitespace-pre-wrap break-all">
-                                    {buildUrl()}
-                                </pre>
-                            </div>
-
-                            {/* Code Examples */}
-                            <div className="mt-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h4 className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Code</h4>
-                                    <div className="flex gap-1 ml-auto">
-                                        {(["curl", "python", "javascript"] as const).map((t) => (
+                        <nav className="flex-1 overflow-y-auto p-2">
+                            {ENDPOINTS.map((cat, catIdx) => (
+                                <div key={cat.category} className="mb-3">
+                                    <div className="px-3 py-1.5 text-xs font-semibold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                                        <span>{cat.icon}</span>
+                                        {cat.category}
+                                    </div>
+                                    {cat.endpoints.map((ep, epIdx) => {
+                                        const active = catIdx === selectedCategory && epIdx === selectedEndpoint;
+                                        return (
                                             <button
-                                                key={t}
-                                                onClick={() => setCodeTab(t)}
-                                                className={`text-[10px] px-2 py-0.5 rounded font-medium transition-colors ${codeTab === t ? "bg-primary/20 text-primary" : "text-text-muted/50 hover:text-text-muted"}`}
+                                                key={ep.path}
+                                                onClick={() => selectEndpoint(catIdx, epIdx)}
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs mb-0.5 transition-all flex items-center gap-2 ${active
+                                                    ? "bg-primary/10 border border-primary/20 text-text-main"
+                                                    : "text-text-muted hover:text-text-main hover:bg-white/5 border border-transparent"
+                                                    }`}
                                             >
-                                                {t}
+                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${methodColor(ep.method)}`}>
+                                                    {ep.method}
+                                                </span>
+                                                <span className="font-mono truncate text-[11px]">
+                                                    {ep.path.replace("/company/{ticker}/", "").replace("/market/", "").replace("/calendar/", "")}
+                                                </span>
                                             </button>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </nav>
+                    </aside>
+
+                    {/* ─── Main Panel ─── */}
+                    <main className="flex-1 overflow-y-auto flex flex-col">
+                        {/* Endpoint Header */}
+                        <div className="p-5 lg:p-6 border-b border-border bg-surface/30">
+                            {/* Mobile selector */}
+                            <div className="lg:hidden mb-4">
+                                <select
+                                    value={`${selectedCategory}-${selectedEndpoint}`}
+                                    onChange={(e) => {
+                                        const [c, ep] = e.target.value.split("-").map(Number);
+                                        selectEndpoint(c, ep);
+                                    }}
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-main font-mono"
+                                >
+                                    {ENDPOINTS.map((cat, ci) =>
+                                        cat.endpoints.map((ep, ei) => (
+                                            <option key={`${ci}-${ei}`} value={`${ci}-${ei}`}>
+                                                {cat.icon} {ep.method} {ep.path}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className={`text-xs font-bold px-2 py-1 rounded border ${methodColor(endpoint.method)}`}>
+                                    {endpoint.method}
+                                </span>
+                                <code className="text-base font-mono text-text-main">{endpoint.path}</code>
+                            </div>
+                            <p className="text-sm text-text-muted">{endpoint.description}</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                            {/* ─── Parameters Panel ─── */}
+                            <div className="lg:w-[400px] border-b lg:border-b-0 lg:border-r border-border p-5 overflow-y-auto">
+                                <h3 className="text-xs font-semibold text-text-main uppercase tracking-wider mb-4">Parameters</h3>
+
+                                {endpoint.params.length === 0 ? (
+                                    <p className="text-xs text-text-muted italic">No parameters required</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {endpoint.params.map((p) => (
+                                            <div key={p.name}>
+                                                <label className="flex items-center gap-2 mb-1.5">
+                                                    <span className="text-xs font-mono text-text-main">{p.name}</span>
+                                                    {p.required && <span className="text-[9px] text-red-400 font-bold">REQUIRED</span>}
+                                                    <span className="text-[9px] text-text-muted/50 ml-auto">{p.type}</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paramValues[p.name] || ""}
+                                                    onChange={(e) => setParamValues({ ...paramValues, [p.name]: e.target.value })}
+                                                    placeholder={p.placeholder || p.default || p.description}
+                                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono text-text-main placeholder-text-muted/40 focus:border-primary/50 outline-none transition-colors"
+                                                />
+                                                <p className="text-[10px] text-text-muted mt-1">{p.description}{p.default ? ` (default: ${p.default})` : ""}</p>
+                                            </div>
                                         ))}
                                     </div>
-                                </div>
-                                <pre className="bg-background rounded-lg p-3 text-[10px] font-mono text-text-main overflow-x-auto">
-                                    <code>{generateCode()}</code>
-                                </pre>
-                            </div>
-                        </div>
-
-                        {/* ─── Response Panel ─── */}
-                        <div className="flex-1 p-5 overflow-hidden flex flex-col">
-                            <div className="flex items-center gap-3 mb-3">
-                                <h3 className="text-xs font-semibold text-text-main uppercase tracking-wider">Response</h3>
-                                {status !== null && (
-                                    <div className="flex items-center gap-3 ml-auto">
-                                        <span className={`text-xs font-mono font-bold ${statusColor}`}>
-                                            {status === 0 ? "ERR" : status}
-                                        </span>
-                                        {elapsed !== null && (
-                                            <span className="text-[10px] text-text-muted font-mono">{elapsed}ms</span>
-                                        )}
-                                    </div>
                                 )}
-                            </div>
 
-                            <div className="flex-1 bg-background rounded-xl border border-border overflow-auto">
-                                {response ? (
-                                    <pre className="p-4 text-xs font-mono text-emerald-300/80 whitespace-pre-wrap">
-                                        <code>{response}</code>
+                                {/* Execute Button */}
+                                <button
+                                    onClick={executeRequest}
+                                    disabled={loading || (isStarter && starterRequestCount >= 5)}
+                                    className="w-full mt-6 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="60" strokeDashoffset="20" />
+                                            </svg>
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            Send Request
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* URL Preview */}
+                                <div className="mt-4">
+                                    <h4 className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">Request URL</h4>
+                                    <pre className="bg-background rounded-lg px-3 py-2 text-[10px] font-mono text-primary/70 overflow-x-auto whitespace-pre-wrap break-all">
+                                        {buildUrl()}
                                     </pre>
-                                ) : (
-                                    <div className="h-full flex items-center justify-center">
-                                        <div className="text-center">
-                                            <div className="text-3xl mb-3 opacity-20">⚡</div>
-                                            <p className="text-sm text-text-muted/50">Hit &quot;Send Request&quot; to see the response</p>
-                                            <p className="text-[10px] text-text-muted/30 mt-1">Results will appear here</p>
+                                </div>
+
+                                {/* Code Examples */}
+                                <div className="mt-5">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h4 className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Code</h4>
+                                        <div className="flex gap-1 ml-auto">
+                                            {(["curl", "python", "javascript"] as const).map((t) => (
+                                                <button
+                                                    key={t}
+                                                    onClick={() => setCodeTab(t)}
+                                                    className={`text-[10px] px-2 py-0.5 rounded font-medium transition-colors ${codeTab === t ? "bg-primary/20 text-primary" : "text-text-muted/50 hover:text-text-muted"}`}
+                                                >
+                                                    {t}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                )}
+                                    <pre className="bg-background rounded-lg p-3 text-[10px] font-mono text-text-main overflow-x-auto">
+                                        <code>{generateCode()}</code>
+                                    </pre>
+                                </div>
+                            </div>
+
+                            {/* ─── Response Panel ─── */}
+                            <div className="flex-1 p-5 overflow-hidden flex flex-col">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <h3 className="text-xs font-semibold text-text-main uppercase tracking-wider">Response</h3>
+                                    {status !== null && (
+                                        <div className="flex items-center gap-3 ml-auto">
+                                            <span className={`text-xs font-mono font-bold ${statusColor}`}>
+                                                {status === 0 ? "ERR" : status}
+                                            </span>
+                                            {elapsed !== null && (
+                                                <span className="text-[10px] text-text-muted font-mono">{elapsed}ms</span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 bg-background rounded-xl border border-border overflow-auto">
+                                    {response ? (
+                                        <pre className="p-4 text-xs font-mono text-emerald-300/80 whitespace-pre-wrap">
+                                            <code>{response}</code>
+                                        </pre>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center">
+                                            <div className="text-center">
+                                                <div className="text-3xl mb-3 opacity-20">⚡</div>
+                                                <p className="text-sm text-text-muted/50">Hit &quot;Send Request&quot; to see the response</p>
+                                                <p className="text-[10px] text-text-muted/30 mt-1">Results will appear here</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </main>
+                    </main>
+                </div>
             </div>
         </DashboardLayout>
     );

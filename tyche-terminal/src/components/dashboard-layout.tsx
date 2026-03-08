@@ -194,15 +194,15 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
         }
     }, [isLoaded, isSignedIn, router]);
 
-    // Check first-time user — keyed per user so tutorial plays on first login
+    // Check first-time user — uses Clerk metadata so it's truly per-account
     useEffect(() => {
-        if (isLoaded && isSignedIn && user?.id) {
-            const completed = localStorage.getItem(`onboarding-completed-${user.id}`);
+        if (isLoaded && isSignedIn && user) {
+            const completed = (user.publicMetadata as Record<string, unknown>)?.onboardingCompleted;
             if (!completed) {
                 setShowOnboarding(true);
             }
         }
-    }, [isLoaded, isSignedIn, user?.id]);
+    }, [isLoaded, isSignedIn, user]);
 
     // Fetch notifications
     const fetchNotifications = useCallback(async () => {
@@ -268,11 +268,12 @@ export function DashboardLayout({ children, title, subtitle, headerRight }: Dash
         } catch { /* ignore */ }
     };
 
-    const handleOnboardingComplete = () => {
+    const handleOnboardingComplete = async () => {
         setShowOnboarding(false);
-        if (user?.id) {
-            localStorage.setItem(`onboarding-completed-${user.id}`, "true");
-        }
+        // Persist flag server-side via Clerk metadata
+        try {
+            await fetch("/api/auth/onboarding-complete", { method: "POST" });
+        } catch { /* non-critical */ }
     };
 
     const handleLogout = async () => {

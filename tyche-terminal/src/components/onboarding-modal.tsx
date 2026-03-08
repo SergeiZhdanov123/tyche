@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const STEPS = [
@@ -8,61 +8,33 @@ const STEPS = [
         icon: "📊",
         title: "Welcome to Erns.",
         description: "Your all-in-one earnings intelligence platform. Let's take a quick tour of the key features.",
-        voice: "Welcome to Erns. Revolutionizing how you trade earnings.",
     },
     {
         icon: "📈",
         title: "Dashboard",
         description: "Your command center. View market indices, watchlist performance, today's earnings, and the week ahead — all in one place.",
-        voice: "Your command center. Everything you need, in one place.",
     },
     {
         icon: "🔍",
         title: "Stock Chart & Analysis",
         description: "Dive deep into any stock with interactive charts, EPS history, revenue comparisons, and AI-powered earnings reviews.",
-        voice: "Dive deep into any stock. Charts, EPS, revenue — powered by AI.",
     },
     {
         icon: "📅",
         title: "Earnings Calendar",
         description: "Never miss an earnings event. Track upcoming announcements, historical surprises, and real-time sentiment analysis.",
-        voice: "Never miss an earnings event. Stay ahead of the market.",
     },
     {
         icon: "⚡",
         title: "Signals & Screener",
         description: "Use AI-driven signals and the advanced screener to find asymmetric trading opportunities before the market catches on.",
-        voice: "AI-driven signals. Find opportunities before the market does.",
     },
     {
         icon: "🔔",
         title: "Stay Notified",
         description: "Add stocks to your watchlist and receive alerts when earnings are announced. Hit the bell icon anytime to check notifications.",
-        voice: "Your watchlist. Your alerts. You're ready.",
     },
 ];
-
-function speakText(text: string) {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.85;
-    utterance.pitch = 0.9;
-    utterance.volume = 0.8;
-    // Prefer a male English voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-        v.lang.startsWith("en") && (v.name.includes("Daniel") || v.name.includes("Alex") || v.name.includes("Male") || v.name.includes("James"))
-    ) || voices.find(v => v.lang.startsWith("en"));
-    if (preferred) utterance.voice = preferred;
-    window.speechSynthesis.speak(utterance);
-}
-
-function stopSpeech() {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-    }
-}
 
 interface OnboardingModalProps {
     onComplete: () => void;
@@ -70,43 +42,16 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ onComplete }: OnboardingModalProps) {
     const [step, setStep] = useState(0);
-    const voicesLoaded = useRef(false);
-
-    // Ensure voices are loaded, then speak first step
-    useEffect(() => {
-        const loadAndSpeak = () => {
-            voicesLoaded.current = true;
-            speakText(STEPS[0].voice);
-        };
-        if (typeof window !== "undefined" && window.speechSynthesis) {
-            const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) {
-                loadAndSpeak();
-            } else {
-                window.speechSynthesis.onvoiceschanged = loadAndSpeak;
-            }
-        }
-        return () => stopSpeech();
-    }, []);
-
-    // Speak when step changes
-    useEffect(() => {
-        if (voicesLoaded.current && step > 0) {
-            speakText(STEPS[step].voice);
-        }
-    }, [step]);
 
     const handleNext = () => {
         if (step < STEPS.length - 1) {
             setStep(step + 1);
         } else {
-            stopSpeech();
             onComplete();
         }
     };
 
     const handleSkip = () => {
-        stopSpeech();
         onComplete();
     };
 
